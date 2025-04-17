@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Request Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .dashboard-header {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .dashboard-header img {
+            height: 60px;
+            margin-right: 15px;
+        }
+        .truck-selection, .skid-details {
+            margin: 25px;
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .truck-btn {
+            margin: 10px;
+            padding: 12px 25px;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .truck-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        table th {
+            background-color: #007bff;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .add-skid-form, .edit-skid-form {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+        .loading-instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e7f3ff;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .btn-sm {
+            padding: 5px 10px;
+        }
+        .print-button {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .print-button:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+        .loading-diagram {
+            width: 100%;
+            height: 300px;
+            background-color: #f0f8ff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .truck-visual {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 100px;
+            background-color: #1e90ff;
+            border-radius: 5px;
+        }
+        .skid-visual {
+            position: absolute;
+            bottom: 120px;
+            height: 30px;
+            background-color: #32cd32;
+            border: 1px solid #228b22;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .forklift-visual {
+            position: absolute;
+            bottom: 20px;
+            width: 40px;
+            height: 60px;
+            background-color: #ffd700;
+            border-radius: 3px;
+        }
+        .loading-sequence {
+            margin-top: 20px;
+        }
+        .sequence-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <img src="https://www.dessa.com/wp-content/uploads/2020/07/dessa-logo.png" alt="Dessa Logo" onerror="this.src='https://via.placeholder.com/60?text=Dessa+Logo'">
+        <div>
+            <h1>Delivery Request Dashboard</h1>
+            <p class="mb-0">Forklift Loading Assistant System</p>
+        </div>
+    </div>
+
+    <!-- Truck Selection -->
+    <div class="truck-selection container">
+        <h3><i class="fas fa-truck"></i> Select Truck Size</h3>
+        <p>Choose the truck size you'll be loading to get started:</p>
+        <div class="d-flex justify-content-center flex-wrap">
+            <button class="btn btn-primary truck-btn" onclick="selectTruck(53)">
+                <i class="fas fa-truck-moving"></i> 53 Feet Truck
+            </button>
+            <button class="btn btn-primary truck-btn" onclick="selectTruck(60)">
+                <i class="fas fa-truck-moving"></i> 60 Feet Truck
+            </button>
+        </div>
+    </div>
+
+    <!-- Skid Details -->
+    <div class="skid-details container" id="skidDetails" style="display: none;">
+        <h3><i class="fas fa-pallet"></i> Skid Details for <span id="truckSize"></span> Truck</h3>
+        <p>Add and manage the skids that need to be loaded onto the truck:</p>
+        
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Skid ID</th>
+                    <th>Width (in)</th>
+                    <th>Length (in)</th>
+                    <th>Weight (lbs)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="skidTableBody"></tbody>
+        </table>
+        
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-success" onclick="showAddSkidForm()">
+                <i class="fas fa-plus"></i> Add Skid
+            </button>
+            <button class="btn print-button" onclick="printLoadingPlan()">
+                <i class="fas fa-print"></i> Print Loading Plan
+            </button>
+        </div>
+
+        <!-- Add Skid Form -->
+        <div class="add-skid-form" id="addSkidForm">
+            <h4><i class="fas fa-plus-circle"></i> Add New Skid</h4>
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="skidWidth" class="form-label">Width (inches)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="skidWidth" min="1" max="120" required>
+                        <span class="input-group-text">in</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="skidLength" class="form-label">Length (inches)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="skidLength" min="1" max="120" required>
+                        <span class="input-group-text">in</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="skidWeight" class="form-label">Weight (pounds)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="skidWeight" min="1" required>
+                        <span class="input-group-text">lbs</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-primary" onclick="addSkid()">
+                    <i class="fas fa-save"></i> Add Skid
+                </button>
+                <button class="btn btn-secondary" onclick="hideAddSkidForm()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+
+        <!-- Edit Skid Form -->
+        <div class="edit-skid-form" id="editSkidForm">
+            <h4><i class="fas fa-edit"></i> Edit Skid</h4>
+            <input type="hidden" id="editSkidIndex">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="editSkidWidth" class="form-label">Width (inches)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="editSkidWidth" min="1" max="120" required>
+                        <span class="input-group-text">in</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="editSkidLength" class="form-label">Length (inches)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="editSkidLength" min="1" max="120" required>
+                        <span class="input-group-text">in</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="editSkidWeight" class="form-label">Weight (pounds)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="editSkidWeight" min="1" required>
+                        <span class="input-group-text">lbs</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-primary" onclick="saveEditSkid()">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <button class="btn btn-secondary" onclick="hideEditSkidForm()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+        
+        <div class="loading-instructions">
+            <h5><i class="fas fa-info-circle"></i> Loading Instructions</h5>
+            <p id="loadingInstructions">Select a truck size and add skids to see loading instructions.</p>
+        </div>
+        
+        <!-- Loading Visualization -->
+        <div class="loading-diagram" id="loadingDiagram">
+            <div class="truck-visual"></div>
+            <!-- Skids and forklift will be added here dynamically -->
+        </div>
+        
+        <div class="loading-sequence" id="loadingSequence">
+            <h5><i class="fas fa-list-ol"></i> Loading Sequence</h5>
+            <div id="sequenceSteps"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize data structure
+        let selectedTruck = null;
+        let skids = {
+            53: [
+                { width: 48, length: 40, weight: 500 },
+                { width: 42, length: 36, weight: 400 },
+                { width: 36, length: 30, weight: 300 }
+            ],
+            60: [
+                { width: 48, length: 48, weight: 600 },
+                { width: 42, length: 42, weight: 450 },
+                { width: 36, length: 36, weight: 350 },
+                { width: 30, length: 30, weight: 250 }
+            ]
+        };
+
+        // Handle logo loading with fallback
+        document.addEventListener('DOMContentLoaded', function() {
+            const logo = document.querySelector('.dashboard-header img');
+            logo.onerror = function() {
+                this.src = 'https://via.placeholder.com/60x60.png?text=Dessa+Logo';
+                this.onerror = null;
+            };
+        });
+
+        // Select truck and update UI
+        function selectTruck(size) {
+            selectedTruck = size;
+            document.getElementById('skidDetails').style.display = 'block';
+            document.getElementById('truckSize').textContent = `${size} Feet`;
+            updateSkidTable();
+            updateLoadingVisualization(size);
+            updateLoadingInstructions();
+        }
+
+        // Update skid table
+        function updateSkidTable() {
+            const tbody = document.getElementById('skidTableBody');
+            tbody.innerHTML = '';
+            
+            if (skids[selectedTruck].length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" class="text-center text-muted">No skids added yet. Click "Add Skid" to get started.</td>
+                `;
+                tbody.appendChild(row);
+                return;
+            }
+            
+            skids[selectedTruck].forEach((skid, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${skid.width} in</td>
+                    <td>${skid.length} in</td>
+                    <td>${skid.weight} lbs</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-warning btn-sm" onclick="editSkid(${index})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="dropSkid(${index})">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Show add skid form
+        function showAddSkidForm() {
+            document.getElementById('addSkidForm').style.display = 'block';
+            document.getElementById('editSkidForm').style.display = 'none';
+        }
+
+        // Hide add skid form
+        function hideAddSkidForm() {
+            document.getElementById('addSkidForm').style.display = 'none';
+            document.getElementById('skidWidth').value = '';
+            document.getElementById('skidLength').value = '';
+            document.getElementById('skidWeight').value = '';
+        }
+
+        // Add new skid
+        function addSkid() {
+            const width = parseFloat(document.getElementById('skidWidth').value);
+            const length = parseFloat(document.getElementById('skidLength').value);
+            const weight = parseFloat(document.getElementById('skidWeight').value);
+            
+            if (!width || width < 1 || width > 120) {
+                alert('Please enter a valid width between 1 and 120 inches.');
+                return;
+            }
+            
+            if (!length || length < 1 || length > 120) {
+                alert('Please enter a valid length between 1 and 120 inches.');
+                return;
+            }
+            
+            if (!weight || weight < 1) {
+                alert('Please enter a valid weight (minimum 1 lb).');
+                return;
+            }
+            
+            skids[selectedTruck].push({ width, length, weight });
+            updateSkidTable();
+            updateLoadingVisualization(selectedTruck);
+            updateLoadingInstructions();
+            hideAddSkidForm();
+        }
+
+        // Drop skid
+        function dropSkid(index) {
+            if (confirm('Are you sure you want to remove this skid?')) {
+                skids[selectedTruck].splice(index, 1);
+                updateSkidTable();
+                updateLoadingVisualization(selectedTruck);
+                updateLoadingInstructions();
+            }
+        }
+
+        // Show edit skid form
+        function editSkid(index) {
+            const skid = skids[selectedTruck][index];
+            document.getElementById('editSkidIndex').value = index;
+            document.getElementById('editSkidWidth').value = skid.width;
+            document.getElementById('editSkidLength').value = skid.length;
+            document.getElementById('editSkidWeight').value = skid.weight;
+            document.getElementById('editSkidForm').style.display = 'block';
+            document.getElementById('addSkidForm').style.display = 'none';
+        }
+
+        // Hide edit skid form
+        function hideEditSkidForm() {
+            document.getElementById('editSkidForm').style.display = 'none';
+        }
+
+        // Save edited skid
+        function saveEditSkid() {
+            const index = document.getElementById('editSkidIndex').value;
+            const width = parseFloat(document.getElementById('editSkidWidth').value);
+            const length = parseFloat(document.getElementById('editSkidLength').value);
+            const weight = parseFloat(document.getElementById('editSkidWeight').value);
+            
+            if (!width || width < 1 || width > 120) {
+                alert('Please enter a valid width between 1 and 120 inches.');
+                return;
+            }
+            
+            if (!length || length < 1 || length > 120) {
+                alert('Please enter a valid length between 1 and 120 inches.');
+                return;
+            }
+            
+            if (!weight || weight < 1) {
+                alert('Please enter a valid weight (minimum 1 lb).');
+                return;
+            }
+            
+            skids[selectedTruck][index] = { width, length, weight };
+            updateSkidTable();
+            updateLoadingVisualization(selectedTruck);
+            updateLoadingInstructions();
+            hideEditSkidForm();
+        }
+
+        // Update loading visualization
+        function updateLoadingVisualization(truckSize) {
+            const diagram = document.getElementById('loadingDiagram');
+            const truckVisual = diagram.querySelector('.truck-visual');
+            
+            // Clear existing skids and forklift
+            diagram.querySelectorAll('.skid-visual').forEach(skid => skid.remove());
+            diagram.querySelector('.forklift-visual')?.remove();
+            
+            // Set truck width based on size
+            truckVisual.style.width = truckSize === 53 ? '80%' : '90%';
+            
+            // Add skids
+            const truckWidth = truckVisual.offsetWidth;
+            const truckLeft = truckVisual.offsetLeft;
+            let xOffset = 10;
+            
+            skids[truckSize].forEach((skid, index) => {
+                const skidWidth = (skid.width / 48) * 100;
+                const skidElement = document.createElement('div');
+                skidElement.className = 'skid-visual';
+                skidElement.style.width = `${Math.min(skidWidth, truckWidth - xOffset - 10)}px`;
+                skidElement.style.left = `${truckLeft + xOffset}px`;
+                skidElement.textContent = `Skid ${index + 1}`;
+                skidElement.title = `${skid.width}" × ${skid.length}", ${skid.weight} lbs`;
+                diagram.appendChild(skidElement);
+                
+                xOffset += skidWidth + 10;
+            });
+            
+            // Add forklift
+            const forklift = document.createElement('div');
+            forklift.className = 'forklift-visual';
+            forklift.style.left = `${truckLeft - 50}px`;
+            diagram.appendChild(forklift);
+            
+            // Animate forklift
+            animateForklift();
+            
+            // Update sequence steps
+            updateSequenceSteps(truckSize);
+        }
+        
+        // Improved forklift animation
+        function animateForklift() {
+            const forklift = document.querySelector('.forklift-visual');
+            const skidElements = document.querySelectorAll('.skid-visual');
+            let currentSkid = 0;
+            
+            // Clear any existing animation
+            clearTimeout(window.forkliftAnimation);
+            
+            function moveToNextSkid() {
+                if (currentSkid >= skidElements.length) return;
+                
+                const skid = skidElements[currentSkid];
+                const skidLeft = skid.offsetLeft;
+                const truckLeft = document.querySelector('.truck-visual').offsetLeft;
+                
+                // Move forklift to skid position
+                forklift.style.transition = 'left 1s ease-in-out';
+                forklift.style.left = `${skidLeft - 30}px`;
+                
+                // After reaching skid, move it back
+                window.forkliftAnimation = setTimeout(() => {
+                    forklift.style.transition = 'left 1.5s ease-in-out';
+                    forklift.style.left = `${truckLeft - 50}px`;
+                    currentSkid++;
+                    window.forkliftAnimation = setTimeout(moveToNextSkid, 1500);
+                }, 1000);
+            }
+            
+            moveToNextSkid();
+        }
+        
+        function updateSequenceSteps(truckSize) {
+            const sequenceSteps = document.getElementById('sequenceSteps');
+            sequenceSteps.innerHTML = '';
+            
+            skids[truckSize].forEach((skid, index) => {
+                const step = document.createElement('div');
+                step.className = 'sequence-step';
+                step.innerHTML = `
+                    <div class="step-number">${index + 1}</div>
+                    <div>
+                        <strong>Load Skid ${index + 1}</strong><br>
+                        ${skid.width}" × ${skid.length}", ${skid.weight} lbs<br>
+                        Position: ${index === 0 ? 'Front of truck' : `After Skid ${index}`}
+                    </div>
+                `;
+                sequenceSteps.appendChild(step);
+            });
+        }
+        
+        function updateLoadingInstructions() {
+            const instructionsElement = document.getElementById('loadingInstructions');
+            
+            if (!selectedTruck || skids[selectedTruck].length === 0) {
+                instructionsElement.innerHTML = `
+                    <p>No skids added yet. Please add skids to generate loading instructions.</p>
+                `;
+                return;
+            }
+            
+            let totalWeight = 0;
+            let instructionsHTML = `
+                <p><strong>Loading Sequence:</strong> Load skids in the following order from front to back:</p>
+                <ol>
+            `;
+            
+            skids[selectedTruck].forEach((skid, index) => {
+                totalWeight += skid.weight;
+                instructionsHTML += `
+                    <li>Skid ${index + 1} (${skid.width}" × ${skid.length}", ${skid.weight} lbs)</li>
+                `;
+            });
+            
+            instructionsHTML += `
+                </ol>
+                <p><strong>Total Weight:</strong> ${totalWeight} lbs</p>
+                <p><strong>Safety Check:</strong> Ensure weight is evenly distributed and does not exceed truck capacity.</p>
+                <p><i class="fas fa-exclamation-triangle"></i> <strong>Important:</strong> Follow the loading sequence above exactly.</p>
+            `;
+            
+            instructionsElement.innerHTML = instructionsHTML;
+        }
+
+        // Print loading plan
+        function printLoadingPlan() {
+            if (!selectedTruck || skids[selectedTruck].length === 0) {
+                alert('Please select a truck and add skids before printing.');
+                return;
+            }
+            
+            let totalWeight = 0;
+            let printContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Loading Plan for ${selectedTruck} Feet Truck</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        h1 { color: #007bff; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #007bff; color: white; }
+                        .header { display: flex; align-items: center; margin-bottom: 20px; }
+                        .header img { height: 60px; margin-right: 20px; }
+                        .instructions { background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 20px 0; }
+                        .footer { margin-top: 30px; font-size: 0.9em; color: #666; }
+                        .sequence-step { display: flex; margin-bottom: 10px; }
+                        .step-number { width: 25px; height: 25px; background-color: #007bff; color: white; 
+                                      border-radius: 50%; display: flex; align-items: center; 
+                                      justify-content: center; margin-right: 10px; font-size: 0.8em; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <img src="https://www.dessa.com/wp-content/uploads/2020/07/dessa-logo.png" alt="Dessa Logo" onerror="this.src='https://via.placeholder.com/60?text=Dessa+Logo'">
+                        <div>
+                            <h1>Forklift Loading Plan</h1>
+                            <p><strong>Truck Size:</strong> ${selectedTruck} Feet</p>
+                        </div>
+                    </div>
+                    
+                    <h2>Skid Details</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Skid ID</th>
+                                <th>Width (in)</th>
+                                <th>Length (in)</th>
+                                <th>Weight (lbs)</th>
+                                <th>Position</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            skids[selectedTruck].forEach((skid, index) => {
+                totalWeight += skid.weight;
+                const position = (index === 0) ? "Front of truck" : 
+                               (index === skids[selectedTruck].length - 1) ? "Back of truck" : 
+                               `After skid ${index}`;
+                
+                printContent += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${skid.width}</td>
+                        <td>${skid.length}</td>
+                        <td>${skid.weight}</td>
+                        <td>${position}</td>
+                    </tr>
+                `;
+            });
+            
+            printContent += `
+                        </tbody>
+                    </table>
+                    
+                    <div class="instructions">
+                        <h3>Loading Instructions</h3>
+                        <p><strong>Total Weight:</strong> ${totalWeight} lbs</p>
+                        <p><strong>Loading Sequence:</strong></p>
+            `;
+            
+            skids[selectedTruck].forEach((skid, index) => {
+                printContent += `
+                    <div class="sequence-step">
+                        <div class="step-number">${index + 1}</div>
+                        <div>
+                            <strong>Load Skid ${index + 1}</strong><br>
+                            ${skid.width}" × ${skid.length}", ${skid.weight} lbs<br>
+                            Position: ${index === 0 ? 'Front of truck' : `After Skid ${index}`}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            printContent += `
+                        <p><strong>Safety Checks:</strong></p>
+                        <ul>
+                            <li>Ensure skids are properly secured</li>
+                            <li>Distribute weight evenly from side to side</li>
+                            <li>Do not exceed truck weight capacity</li>
+                            <li>Use proper lifting techniques</li>
+                            <li>Wear appropriate safety gear</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer">
+                        <p><strong>Generated on:</strong> ${new Date().toLocaleString()}</p>
+                        <p>Dessa Delivery Request System</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            const win = window.open('', '_blank');
+            win.document.write(printContent);
+            win.document.close();
+            setTimeout(() => {
+                win.print();
+            }, 500);
+        }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
