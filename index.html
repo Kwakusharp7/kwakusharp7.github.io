@@ -3,722 +3,1443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delivery Loading Plan</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Dessa - Complete Loading & Packing Solution</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <style>
+        :root {
+            --primary-blue: #0056b3;
+            --secondary-blue: #007bff;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #343a40;
+            --danger-red: #dc3545;
+            --success-green: #28a745;
+        }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-        }
-        .dashboard-header {
-            text-align: center;
-            padding: 25px;
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .dashboard-header img {
-            height: 60px;
-            margin-right: 15px;
-        }
-        .truck-selection, .skid-details {
-            margin: 25px;
-            background-color: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-        .truck-btn {
-            margin: 10px;
-            padding: 12px 25px;
-            font-weight: 500;
-            border-radius: 6px;
-            transition: all 0.3s;
-        }
-        .truck-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-        table th {
-            background-color: #007bff;
-            color: white;
-            padding: 12px;
-            text-align: left;
-        }
-        table td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-        }
-        table tr:hover {
-            background-color: #f5f5f5;
-        }
-        .add-skid-form, .edit-skid-form {
-            margin-top: 20px;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: var(--light-gray);
+            margin: 0;
             padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            display: none;
+            color: var(--dark-gray);
         }
-        .form-label {
-            font-weight: 500;
-        }
-        .loading-instructions {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e7f3ff;
-            border-left: 4px solid #007bff;
-            border-radius: 4px;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-        .btn-sm {
-            padding: 5px 10px;
-        }
-        .print-button {
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-        .print-button:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-        }
-        .loading-diagram {
+        
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             width: 100%;
-            height: 300px;
-            background-color: #f0f8ff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-top: 20px;
-            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
             overflow: hidden;
         }
-        .truck-visual {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 100px;
-            background-color: #1e90ff;
-            border-radius: 5px;
-        }
-        .skid-visual {
-            position: absolute;
-            bottom: 120px;
-            height: 30px;
-            background-color: #32cd32;
-            border: 1px solid #228b22;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        
+        .header {
+            background-color: var(--primary-blue);
             color: white;
-            font-weight: bold;
-            font-size: 12px;
+            padding: 25px 30px;
+            text-align: center;
         }
-        .forklift-visual {
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary-blue);
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--medium-gray);
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+        
+        .form-group input, 
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--secondary-blue);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+        
+        .unit-label {
+            color: #6c757d;
+            font-size: 14px;
+            margin-left: 5px;
+            font-weight: normal;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-next {
+            background-color: var(--success-green);
+            color: white;
+        }
+        
+        .btn-next:hover {
+            background-color: #218838;
+        }
+        
+        .btn-cancel {
+            background-color: var(--medium-gray);
+            color: var(--dark-gray);
+        }
+        
+        .btn-cancel:hover {
+            background-color: #d6d8db;
+        }
+        
+        .btn-print {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+        
+        .btn-print:hover {
+            background-color: #004494;
+        }
+        
+        .input-icon {
+            position: relative;
+        }
+        
+        .input-icon i {
             position: absolute;
-            bottom: 20px;
-            width: 40px;
-            height: 60px;
-            background-color: #ffd700;
-            border-radius: 3px;
+            right: 15px;
+            top: 42px;
+            color: #6c757d;
         }
-        .loading-sequence {
+        
+        /* Skid Details Styles */
+        .skid-details {
+            margin-top: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--light-gray);
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        
+        .btn-edit {
+            background-color: var(--secondary-blue);
+            color: white;
+        }
+        
+        .btn-delete {
+            background-color: var(--danger-red);
+            color: white;
+        }
+        
+        .form-container {
+            background-color: var(--light-gray);
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        
+        .col-md-3 {
+            flex: 0 0 25%;
+            max-width: 25%;
+            padding: 0 10px;
+        }
+        
+        .col-md-4 {
+            flex: 0 0 33.333%;
+            max-width: 33.333%;
+            padding: 0 10px;
+        }
+        
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 0 10px;
+        }
+        
+        .col-md-12 {
+            flex: 0 0 100%;
+            max-width: 100%;
+            padding: 0 10px;
+        }
+        
+        .input-group {
+            display: flex;
+        }
+        
+        .input-group-text {
+            padding: 12px 15px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-left: none;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 6px 0 0 6px;
+            font-size: 16px;
+        }
+        
+        .mt-3 {
+            margin-top: 15px;
+        }
+        
+        .d-flex {
+            display: flex;
+        }
+        
+        .justify-content-between {
+            justify-content: space-between;
+        }
+        
+        .loading-instructions {
+            background-color: var(--light-gray);
+            padding: 15px;
+            border-radius: 6px;
             margin-top: 20px;
         }
-        .sequence-step {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
+        
+        .warning {
+            color: var(--danger-red);
+            font-weight: 600;
         }
-        .step-number {
-            width: 30px;
-            height: 30px;
-            background-color: #007bff;
-            color: white;
-            border-radius: 50%;
+        
+        /* Page transition */
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* Packing List Styles */
+        .document-container {
+            background-color: white;
+            padding: 40px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .packing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo-container {
+            width: 120px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 15px;
+        }
+        
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .packing-title {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: 600;
+            flex-grow: 1;
+        }
+        
+        .subtitle {
+            text-align: center;
             font-weight: bold;
+            margin-bottom: 25px;
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        
+        .divider {
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #2c3e50, transparent);
+            margin: 20px 0;
+        }
+        
+        .form-section {
+            margin-bottom: 25px;
+        }
+        
+        .form-row {
+            display: flex;
+            margin-bottom: 15px;
+            gap: 20px;
+        }
+        
+        .form-field {
+            flex: 1;
+        }
+        
+        .fixed-info {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f5f7fa;
+            border-radius: 4px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .fixed-info p {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        
+        .signature-area {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px dashed #bdc3c7;
+        }
+        
+        .signature-container {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+            position: relative;
+            height: 120px;
+            background-color: #f9f9f9;
+        }
+        
+        #signature-pad {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .signature-clear {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .required:after {
+            content: " *";
+            color: #e74c3c;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .action-button {
+            flex: 1;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .print-button {
+            background: #3498db;
+            color: white;
+        }
+        
+        .print-button:hover {
+            background: #2980b9;
+        }
+        
+        .save-button {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .save-button:hover {
+            background: #27ae60;
+        }
+        
+        .clear-button {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .clear-button:hover {
+            background: #c0392b;
+        }
+        
+        .signature-required {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .save-status {
+            font-size: 12px;
+            color: #27ae60;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        /* Print styles */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            body {
+                padding: 0;
+                background: white;
+                font-size: 12pt;
+            }
+            
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            
+            table {
+                page-break-inside: avoid;
+            }
+            
+            .loading-instructions {
+                page-break-before: avoid;
+            }
+            
+            .header {
+                background: white !important;
+                color: black !important;
+                padding: 10px 0 !important;
+                border-bottom: 2px solid var(--primary-blue);
+            }
+            
+            .action-buttons, .save-status {
+                display: none;
+            }
+            
+            .document-container {
+                box-shadow: none;
+                padding: 20px;
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .col-md-3, .col-md-4, .col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+                margin-bottom: 15px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .button-group .btn {
+                width: 100%;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .packing-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .logo-container {
+                margin-bottom: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Dashboard Header -->
-    <div class="dashboard-header">
-        <img src="dessa_img.webp" alt="Dessa Logo" onerror="this.src='https://via.placeholder.com/60?text=Dessa+Logo'">
-        <div>
-            <h1>Delivery Load Plan</h1>
-            <p class="mb-0">Forklift Loading Assistant System</p>
+    <div class="container">
+        <div class="header">
+            <h1>Dessa</h1>
+            <p>Complete Loading & Packing Solution</p>
+        </div>
+        
+        <div class="content">
+            <!-- Truck Information Form -->
+            <div id="truckInfoPage" class="page active">
+                <h2 class="section-title">Truck Information Entry</h2>
+                <p>Enter the truck details to begin loading planning</p>
+                
+                <form id="truckInfoForm">
+                    <div class="form-group input-icon">
+                        <label for="truckId">Truck Identification <span class="unit-label">(Required)</span></label>
+                        <input type="text" id="truckId" name="truckId" placeholder="Enter truck ID or license plate" required>
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    
+                    <div class="form-group input-icon">
+                        <label for="length">Length <span class="unit-label">(Feet)</span></label>
+                        <input type="number" id="length" name="length" placeholder="Enter length in feet" step="0.01" min="0" required>
+                        <i class="fas fa-ruler-horizontal"></i>
+                    </div>
+                    
+                    <div class="form-group input-icon">
+                        <label for="width">Width <span class="unit-label">(Feet)</span></label>
+                        <input type="number" id="width" name="width" placeholder="Enter width in feet" step="0.01" min="0" required>
+                        <i class="fas fa-ruler-vertical"></i>
+                    </div>
+                    
+                    <div class="form-group input-icon">
+                        <label for="weight">Weight Capacity <span class="unit-label">(Pounds)</span></label>
+                        <input type="number" id="weight" name="weight" placeholder="Enter maximum weight capacity" step="1" min="0" required>
+                        <i class="fas fa-weight-hanging"></i>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button type="button" class="btn btn-cancel" id="cancelBtn">Cancel</button>
+                        <button type="button" class="btn btn-next" id="nextBtn">Next</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Skid Details Section -->
+            <div id="skidDetailsPage" class="page">
+                <h2 class="section-title"><i class="fas fa-pallet"></i> Skid Details for <span id="truckSize"></span></h2>
+                <p>Add and manage the skids that need to be loaded onto the truck:</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Skid ID</th>
+                            <th>Width (ft)</th>
+                            <th>Length (ft)</th>
+                            <th>Weight (lbs)</th>
+                            <th>Description</th>
+                            <th class="no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="skidTableBody"></tbody>
+                </table>
+                
+                <div class="d-flex justify-content-between no-print">
+                    <button class="btn btn-success" onclick="showAddSkidForm()">
+                        <i class="fas fa-plus"></i> Add Skid
+                    </button>
+                    <button class="btn btn-print" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print Loading Plan
+                    </button>
+                </div>
+
+                <!-- Add Skid Form -->
+                <div class="form-container no-print" id="addSkidForm" style="display: none;">
+                    <h4><i class="fas fa-plus-circle"></i> Add New Skid</h4>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="skidWidth" class="form-label">Width <span class="unit-label">(Feet)</span></label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="skidWidth" min="0.1" max="40" step="0.01" required>
+                                <span class="input-group-text">ft</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="skidLength" class="form-label">Length <span class="unit-label">(Feet)</span></label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="skidLength" min="0.1" max="40" step="0.01" required>
+                                <span class="input-group-text">ft</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="skidWeight" class="form-label">Weight <span class="unit-label">(Pounds)</span></label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="skidWeight" min="1" required>
+                                <span class="input-group-text">lbs</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="skidDescription" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="skidDescription" placeholder="Brief description">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="button-group">
+                                <button type="button" class="btn btn-secondary" onclick="hideAddSkidForm()">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="addSkid()">
+                                    <i class="fas fa-save"></i> Add Skid
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Skid Form -->
+                <div class="form-container no-print" id="editSkidForm" style="display: none;">
+                    <h4><i class="fas fa-edit"></i> Edit Skid</h4>
+                    <input type="hidden" id="editSkidIndex">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="editSkidWidth" class="form-label">Width <span class="unit-label">(Feet)</span></label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="editSkidWidth" min="0.1" max="40" step="0.01" required>
+                                <span class="input-group-text">ft</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="editSkidLength" class="form-label">Length <span class="unit-label">(Feet)</span></label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="editSkidLength" min="0.1" max="40" step="0.01" required>
+                                <span class="input-group-text">ft</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="editSkidWeight" class="form-label">Weight <span class="unit-label">(Pounds)</span></label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="editSkidWeight" min="1" required>
+                                <span class="input-group-text">lbs</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="editSkidDescription" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="editSkidDescription" placeholder="Brief description">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="button-group">
+                                <button type="button" class="btn btn-secondary" onclick="hideEditSkidForm()">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="saveEditSkid()">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="loading-instructions">
+                    <h5><i class="fas fa-info-circle"></i> Loading Instructions</h5>
+                    <div id="loadingInstructions">Add skids to see loading instructions.</div>
+                </div>
+                
+                <div class="button-group no-print" style="margin-top: 30px;">
+                    <button class="btn btn-cancel" onclick="goBackToTruckInfo()">
+                        <i class="fas fa-arrow-left"></i> Back to Truck Info
+                    </button>
+                    <button class="btn btn-next" onclick="proceedToPackingList()">
+                        <i class="fas fa-clipboard-list"></i> Continue to Packing List
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Packing List Section -->
+            <div id="packingListPage" class="page">
+                <div class="document-container">
+                    <div class="packing-header">
+                        <div class="logo-container">
+                            <img src="img.webp" alt="Company Logo">
+                        </div>
+                        <div style="flex-grow: 1;">
+                            <div class="packing-title"># TRUCK</div>
+                            <div class="subtitle">DESA PANELS<br>PACKING LIST</div>
+                        </div>
+                    </div>
+                    
+                    <form id="packing-list-form">
+                        <div class="divider"></div>
+                        
+                        <div class="form-section">
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label for="date" class="required">DATE:</label>
+                                    <input type="date" id="date" name="date" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="work-order" class="required">WORK ORDER NO.:</label>
+                                    <input type="text" id="work-order" name="work-order" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-field">
+                                <label for="project-name" class="required">PROJECT NAME:</label>
+                                <input type="text" id="project-name" name="project-name" required>
+                            </div>
+                            
+                            <div class="form-field">
+                                <label for="project-address" class="required">PROJECT ADDRESS:</label>
+                                <input type="text" id="project-address" name="project-address" required>
+                            </div>
+                        </div>
+                        
+                        <div class="divider"></div>
+                        
+                        <div class="form-section">
+                            <div class="fixed-info">
+                                <p><strong>SHIPPER / FROM:</strong><br>
+                                DESA Glass</p>
+                                <p><strong>ADDRESS:</strong><br>
+                                285079 Bluegrass Drive Rocky View, AB T1X 0P5 Canada</p>
+                            </div>
+                            
+                            <div class="fixed-info">
+                                <p><strong>Phone:</strong><br>
+                                403.230.5011</p>
+                                <p><strong>Toll Free Phone:</strong><br>
+                                1.877.508.3965</p>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="section-title">DELIVERY INFORMATION</div>
+                            
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label for="requested-delivery" class="required">REQUESTED DELIVERY DATE:</label>
+                                    <input type="date" id="requested-delivery" name="requested-delivery" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="requested-by" class="required">REQUESTED BY:</label>
+                                    <input type="text" id="requested-by" name="requested-by" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-field">
+                                <label for="carrier" class="required">CARRIER:</label>
+                                <input type="text" id="carrier" name="carrier" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="section-title">CONSIGNEE DETAILS</div>
+                            
+                            <div class="form-field">
+                                <label for="consignee" class="required">CONSIGNEE/ TO:</label>
+                                <input type="text" id="consignee" name="consignee" required>
+                            </div>
+                            
+                            <div class="form-field">
+                                <label for="consignee-address" class="required">ADDRESS:</label>
+                                <input type="text" id="consignee-address" name="consignee-address" required>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label for="site-contact" class="required">SITE CONTACT:</label>
+                                    <input type="text" id="site-contact" name="site-contact" required>
+                                </div>
+                                <div class="form-field">
+                                    <label for="site-phone" class="required">PHONE:</label>
+                                    <input type="text" id="site-phone" name="site-phone" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="section-title">DELIVERY CONFIRMATION</div>
+                            
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label for="delivery-date">DELIVERY DATE:</label>
+                                    <input type="date" id="delivery-date" name="delivery-date">
+                                </div>
+                                <div class="form-field">
+                                    <label for="packaged-by">PACKAGED BY:</label>
+                                    <input type="text" id="packaged-by" name="packaged-by">
+                                </div>
+                            </div>
+                            
+                            <div class="form-field">
+                                <label for="checked-by">CHECKED BY:</label>
+                                <input type="text" id="checked-by" name="checked-by">
+                            </div>
+                        </div>
+                        
+                        <div class="signature-area">
+                            <div class="form-field">
+                                <label for="received-by" class="required">RECEIVED BY:</label>
+                                <input type="text" id="received-by" name="received-by" required>
+                            </div>
+                            
+                            <div style="margin-top: 20px;">
+                                <label class="required">SIGNATURE:</label>
+                                <div class="signature-container">
+                                    <canvas id="signature-pad"></canvas>
+                                    <button type="button" class="signature-clear">Clear Signature</button>
+                                </div>
+                                <div class="signature-required" id="signature-error">Signature is required</div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons no-print">
+                            <button type="button" class="action-button print-button" onclick="window.print()">Print</button>
+                            <button type="button" class="action-button save-button" id="save-btn">Save Progress</button>
+                            <button type="button" class="action-button clear-button" id="clear-btn">Clear Form</button>
+                        </div>
+                        <div class="save-status" id="save-status">Progress saved automatically</div>
+                    </form>
+                </div>
+                
+                <div class="button-group no-print" style="margin-top: 30px;">
+                    <button class="btn btn-cancel" onclick="goBackToSkidDetails()">
+                        <i class="fas fa-arrow-left"></i> Back to Skid Details
+                    </button>
+                    <button class="btn btn-next" onclick="completePackingList()">
+                        <i class="fas fa-check-circle"></i> Complete Packing List
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Truck Selection -->
-    <div class="truck-selection container">
-        <h3><i class="fas fa-truck"></i> Fill out the BoL</h3>
-        <div class="d-flex justify-content-center flex-wrap">
-            <button class="btn btn-primary truck-btn" onclick="selectTruck(53)">
-                <i class="fas fa-truck-moving"></i> 53 Feet Truck
-            </button>
-            <button class="btn btn-primary truck-btn" onclick="selectTruck(60)">
-                <i class="fas fa-truck-moving"></i> 60 Feet Truck
-            </button>
-        </div>
-    </div>
-
-    <!-- Skid Details -->
-    <div class="skid-details container" id="skidDetails" style="display: none;">
-        <h3><i class="fas fa-pallet"></i> Skid Details for <span id="truckSize"></span> Truck</h3>
-        <p>Add and manage the skids that need to be loaded onto the truck:</p>
-        
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Skid ID</th>
-                    <th>Width (in)</th>
-                    <th>Length (in)</th>
-                    <th>Weight (lbs)</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="skidTableBody"></tbody>
-        </table>
-        
-        <div class="d-flex justify-content-between">
-            <button class="btn btn-success" onclick="showAddSkidForm()">
-                <i class="fas fa-plus"></i> Add Skid
-            </button>
-            <button class="btn print-button" onclick="printLoadingPlan()">
-                <i class="fas fa-print"></i> Print Loading Plan
-            </button>
-        </div>
-
-        <!-- Add Skid Form -->
-        <div class="add-skid-form" id="addSkidForm">
-            <h4><i class="fas fa-plus-circle"></i> Add New Skid</h4>
-            <div class="row">
-                <div class="col-md-4">
-                    <label for="skidWidth" class="form-label">Width (inches)</label>
-                    <div class="input-group">
-                        <input type="number" class="form-control" id="skidWidth" min="1" max="120" required>
-                        <span class="input-group-text">in</span>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <label for="skidLength" class="form-label">Length (inches)</label>
-                    <div class="input-group">
-                        <input type="number" class="form-control" id="skidLength" min="1" max="120" required>
-                        <span class="input-group-text">in</span>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <label for="skidWeight" class="form-label">Weight (pounds)</label>
-                    <div class="input-group">
-                        <input type="number" class="form-control" id="skidWeight" min="1" required>
-                        <span class="input-group-text">lbs</span>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-3">
-                <button class="btn btn-primary" onclick="addSkid()">
-                    <i class="fas fa-save"></i> Add Skid
-                </button>
-                <button class="btn btn-secondary" onclick="hideAddSkidForm()">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-            </div>
-        </div>
-
-        <!-- Edit Skid Form -->
-        <div class="edit-skid-form" id="editSkidForm">
-            <h4><i class="fas fa-edit"></i> Edit Skid</h4>
-            <input type="hidden" id="editSkidIndex">
-            <div class="row">
-                <div class="col-md-4">
-                    <label for="editSkidWidth" class="form-label">Width (inches)</label>
-                    <div class="input-group">
-                        <input type="number" class="form-control" id="editSkidWidth" min="1" max="120" required>
-                        <span class="input-group-text">in</span>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <label for="editSkidLength" class="form-label">Length (inches)</label>
-                    <div class="input-group">
-                        <input type="number" class="form-control" id="editSkidLength" min="1" max="120" required>
-                        <span class="input-group-text">in</span>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <label for="editSkidWeight" class="form-label">Weight (pounds)</label>
-                    <div class="input-group">
-                        <input type="number" class="form-control" id="editSkidWeight" min="1" required>
-                        <span class="input-group-text">lbs</span>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-3">
-                <button class="btn btn-primary" onclick="saveEditSkid()">
-                    <i class="fas fa-save"></i> Save Changes
-                </button>
-                <button class="btn btn-secondary" onclick="hideEditSkidForm()">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-            </div>
-        </div>
-        
-        <div class="loading-instructions">
-            <h5><i class="fas fa-info-circle"></i> Loading Instructions</h5>
-            <p id="loadingInstructions">Select a truck size and add skids to see loading instructions.</p>
-        </div>
-        
-        <!-- Loading Visualization -->
-        <div class="loading-diagram" id="loadingDiagram">
-            <div class="truck-visual"></div>
-            <!-- Skids and forklift will be added here dynamically -->
-        </div>
-        
-        <div class="loading-sequence" id="loadingSequence">
-            <h5><i class="fas fa-list-ol"></i> Loading Sequence</h5>
-            <div id="sequenceSteps"></div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
     <script>
-        // Initialize data structure
-        let selectedTruck = null;
-        let skids = {
-            53: [
-                { width: 48, length: 40, weight: 500 },
-                { width: 42, length: 36, weight: 400 },
-                { width: 36, length: 30, weight: 300 }
-            ],
-            60: [
-                { width: 48, length: 48, weight: 600 },
-                { width: 42, length: 42, weight: 450 },
-                { width: 36, length: 36, weight: 350 },
-                { width: 30, length: 30, weight: 250 }
-            ]
-        };
+        // Truck information
+        let truckInfo = {};
+        let skids = [];
+        let nextSkidId = 1;
+        let signaturePad;
+        let saveTimeout;
 
-        // Handle logo loading with fallback
+        // DOM elements
+        const truckInfoPage = document.getElementById('truckInfoPage');
+        const skidDetailsPage = document.getElementById('skidDetailsPage');
+        const packingListPage = document.getElementById('packingListPage');
+        const truckSizeSpan = document.getElementById('truckSize');
+        const skidTableBody = document.getElementById('skidTableBody');
+        const loadingInstructions = document.getElementById('loadingInstructions');
+        const nextBtn = document.getElementById('nextBtn');
+        const truckInfoForm = document.getElementById('truckInfoForm');
+
+        // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
-            const logo = document.querySelector('.dashboard-header img');
-            logo.onerror = function() {
-                this.src = 'https://via.placeholder.com/60x60.png?text=Dessa+Logo';
-                this.onerror = null;
-            };
+            // Set up event listeners
+            nextBtn.addEventListener('click', proceedToSkidDetails);
+            document.getElementById('cancelBtn').addEventListener('click', cancelForm);
+            
+            // Prevent form submission
+            truckInfoForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                proceedToSkidDetails();
+            });
+            
+            // Initialize skid table
+            updateSkidTable();
+            
+            // Initialize signature pad when packing list page is shown
+            const canvas = document.getElementById('signature-pad');
+            signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgb(249, 249, 249)',
+                penColor: 'rgb(0, 0, 0)'
+            });
+            
+            // Adjust canvas coordinate space
+            function resizeCanvas() {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext('2d').scale(ratio, ratio);
+                signaturePad.clear();
+            }
+            
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            
+            // Load saved data if available
+            loadSavedData();
+            
+            // Auto-save when fields change
+            document.getElementById('packing-list-form').addEventListener('input', function() {
+                saveFormData();
+            });
+            
+            // Auto-save when signature changes
+            canvas.addEventListener('mouseup', function() {
+                if (!signaturePad.isEmpty()) {
+                    document.getElementById('signature-error').style.display = 'none';
+                    saveFormData();
+                }
+            });
+            
+            canvas.addEventListener('touchend', function() {
+                if (!signaturePad.isEmpty()) {
+                    document.getElementById('signature-error').style.display = 'none';
+                    saveFormData();
+                }
+            });
+            
+            document.querySelector('.signature-clear').addEventListener('click', function() {
+                signaturePad.clear();
+                document.getElementById('signature-error').style.display = 'none';
+                saveFormData();
+            });
+            
+            // Manual save button
+            document.getElementById('save-btn').addEventListener('click', function() {
+                saveFormData();
+            });
+            
+            // Clear form button
+            document.getElementById('clear-btn').addEventListener('click', clearForm);
+            
+            // Save before unload
+            window.addEventListener('beforeunload', function() {
+                saveFormData();
+            });
         });
 
-        // Select truck and update UI
-        function selectTruck(size) {
-            selectedTruck = size;
-            document.getElementById('skidDetails').style.display = 'block';
-            document.getElementById('truckSize').textContent = `${size} Feet`;
-            updateSkidTable();
-            updateLoadingVisualization(size);
-            updateLoadingInstructions();
-        }
-
-        // Update skid table
-        function updateSkidTable() {
-            const tbody = document.getElementById('skidTableBody');
-            tbody.innerHTML = '';
+        function proceedToSkidDetails() {
+            // Get form values
+            const truckId = document.getElementById('truckId').value.trim();
+            const length = parseFloat(document.getElementById('length').value);
+            const width = parseFloat(document.getElementById('width').value);
+            const weight = parseInt(document.getElementById('weight').value);
             
-            if (skids[selectedTruck].length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td colspan="5" class="text-center text-muted">No skids added yet. Click "Add Skid" to get started.</td>
-                `;
-                tbody.appendChild(row);
+            // Validate inputs
+            if (!truckId || isNaN(length) || isNaN(width) || isNaN(weight)) {
+                alert('Please fill all fields with valid values');
                 return;
             }
             
-            skids[selectedTruck].forEach((skid, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${skid.width} in</td>
-                    <td>${skid.length} in</td>
-                    <td>${skid.weight} lbs</td>
-                    <td class="action-buttons">
-                        <button class="btn btn-warning btn-sm" onclick="editSkid(${index})">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="dropSkid(${index})">
-                            <i class="fas fa-trash"></i> Remove
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+            if (length <= 0 || width <= 0 || weight <= 0) {
+                alert('All measurements must be greater than zero');
+                return;
+            }
+            
+            // Save truck info
+            truckInfo = {
+                truckId,
+                length,
+                width,
+                weight
+            };
+            
+            // Update truck size display
+            truckSizeSpan.textContent = `${length}ft × ${width}ft (${weight}lbs capacity)`;
+            
+            // Switch to skid details page
+            truckInfoPage.classList.remove('active');
+            skidDetailsPage.classList.add('active');
+            
+            // Reset skid list for new truck
+            skids = [];
+            nextSkidId = 1;
+            updateSkidTable();
+            updateLoadingInstructions();
         }
 
-        // Show add skid form
+        function cancelForm() {
+            if(confirm('Are you sure you want to cancel? All entered data will be lost.')) {
+                document.getElementById('truckInfoForm').reset();
+                console.log('Form cancelled');
+            }
+        }
+
+        function goBackToTruckInfo() {
+            skidDetailsPage.classList.remove('active');
+            truckInfoPage.classList.add('active');
+        }
+
+        function proceedToPackingList() {
+            if (skids.length === 0) {
+                alert('Please add at least one skid before proceeding to packing list');
+                return;
+            }
+            
+            // Calculate totals
+            const totalWeight = skids.reduce((sum, skid) => sum + skid.weight, 0);
+            const totalArea = skids.reduce((sum, skid) => sum + (skid.width * skid.length), 0);
+            const truckArea = truckInfo.length * truckInfo.width;
+            
+            // Check for warnings
+            let warnings = [];
+            if (totalWeight > truckInfo.weight) {
+                warnings.push('Total weight exceeds truck capacity');
+            }
+            if (totalArea > truckArea) {
+                warnings.push('Total area exceeds truck space');
+            }
+            
+            if (warnings.length > 0) {
+                if (!confirm('Warnings detected:\n\n' + warnings.join('\n') + '\n\nAre you sure you want to proceed?')) {
+                    return;
+                }
+            }
+            
+            // Switch to packing list page
+            skidDetailsPage.classList.remove('active');
+            packingListPage.classList.add('active');
+            
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            document.getElementById('requested-delivery').value = today;
+            
+            // Set truck ID in work order field
+                        // Set truck ID in work order field
+                        document.getElementById('work-order').value = truckInfo.truckId;
+        }
+
+        function goBackToSkidDetails() {
+            packingListPage.classList.remove('active');
+            skidDetailsPage.classList.add('active');
+        }
+
+        function completePackingList() {
+            // Validate required fields
+            const requiredFields = [
+                'date', 'work-order', 'project-name', 'project-address',
+                'requested-delivery', 'requested-by', 'carrier',
+                'consignee', 'consignee-address', 'site-contact',
+                'site-phone', 'received-by'
+            ];
+            
+            let isValid = true;
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    field.style.borderColor = 'var(--danger-red)';
+                    isValid = false;
+                } else {
+                    field.style.borderColor = '';
+                }
+            });
+            
+            // Validate signature
+            if (signaturePad.isEmpty()) {
+                document.getElementById('signature-error').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('signature-error').style.display = 'none';
+            }
+            
+            if (!isValid) {
+                alert('Please fill all required fields and provide a signature');
+                return;
+            }
+            
+            // In a real application, you would submit the form data to a server
+            const formData = new FormData(document.getElementById('packing-list-form'));
+            const packingData = {};
+            for (let [key, value] of formData.entries()) {
+                packingData[key] = value;
+            }
+            
+            // Add truck and skid information
+            packingData.truckInfo = truckInfo;
+            packingData.skids = skids;
+            
+            // Add signature
+            packingData.signature = signaturePad.toDataURL();
+            
+            console.log('Completed packing list:', packingData);
+            
+            // Show success message
+            alert('Packing list completed successfully!');
+            
+            // Optionally reset the form or redirect
+            // resetAllForms();
+        }
+
+        // Skid management functions
         function showAddSkidForm() {
             document.getElementById('addSkidForm').style.display = 'block';
-            document.getElementById('editSkidForm').style.display = 'none';
-        }
-
-        // Hide add skid form
-        function hideAddSkidForm() {
-            document.getElementById('addSkidForm').style.display = 'none';
             document.getElementById('skidWidth').value = '';
             document.getElementById('skidLength').value = '';
             document.getElementById('skidWeight').value = '';
+            document.getElementById('skidDescription').value = '';
+            document.getElementById('skidWidth').focus();
         }
 
-        // Add new skid
+        function hideAddSkidForm() {
+            document.getElementById('addSkidForm').style.display = 'none';
+        }
+
         function addSkid() {
             const width = parseFloat(document.getElementById('skidWidth').value);
             const length = parseFloat(document.getElementById('skidLength').value);
             const weight = parseFloat(document.getElementById('skidWeight').value);
+            const description = document.getElementById('skidDescription').value;
             
-            if (!width || width < 1 || width > 120) {
-                alert('Please enter a valid width between 1 and 120 inches.');
+            if (isNaN(width) || isNaN(length) || isNaN(weight)) {
+                alert('Please enter valid values for all fields');
                 return;
             }
             
-            if (!length || length < 1 || length > 120) {
-                alert('Please enter a valid length between 1 and 120 inches.');
-                return;
-            }
+            skids.push({
+                id: nextSkidId++,
+                width,
+                length,
+                weight,
+                description
+            });
             
-            if (!weight || weight < 1) {
-                alert('Please enter a valid weight (minimum 1 lb).');
-                return;
-            }
-            
-            skids[selectedTruck].push({ width, length, weight });
-            updateSkidTable();
-            updateLoadingVisualization(selectedTruck);
-            updateLoadingInstructions();
             hideAddSkidForm();
+            updateSkidTable();
+            updateLoadingInstructions();
         }
 
-        // Drop skid
-        function dropSkid(index) {
-            if (confirm('Are you sure you want to remove this skid?')) {
-                skids[selectedTruck].splice(index, 1);
-                updateSkidTable();
-                updateLoadingVisualization(selectedTruck);
-                updateLoadingInstructions();
-            }
-        }
-
-        // Show edit skid form
         function editSkid(index) {
-            const skid = skids[selectedTruck][index];
+            const skid = skids[index];
+            document.getElementById('editSkidForm').style.display = 'block';
             document.getElementById('editSkidIndex').value = index;
             document.getElementById('editSkidWidth').value = skid.width;
             document.getElementById('editSkidLength').value = skid.length;
             document.getElementById('editSkidWeight').value = skid.weight;
-            document.getElementById('editSkidForm').style.display = 'block';
-            document.getElementById('addSkidForm').style.display = 'none';
+            document.getElementById('editSkidDescription').value = skid.description;
         }
 
-        // Hide edit skid form
         function hideEditSkidForm() {
             document.getElementById('editSkidForm').style.display = 'none';
         }
 
-        // Save edited skid
         function saveEditSkid() {
             const index = document.getElementById('editSkidIndex').value;
             const width = parseFloat(document.getElementById('editSkidWidth').value);
             const length = parseFloat(document.getElementById('editSkidLength').value);
             const weight = parseFloat(document.getElementById('editSkidWeight').value);
+            const description = document.getElementById('editSkidDescription').value;
             
-            if (!width || width < 1 || width > 120) {
-                alert('Please enter a valid width between 1 and 120 inches.');
+            if (isNaN(width) || isNaN(length) || isNaN(weight)) {
+                alert('Please enter valid values for all fields');
                 return;
             }
             
-            if (!length || length < 1 || length > 120) {
-                alert('Please enter a valid length between 1 and 120 inches.');
-                return;
-            }
+            skids[index] = {
+                ...skids[index],
+                width,
+                length,
+                weight,
+                description
+            };
             
-            if (!weight || weight < 1) {
-                alert('Please enter a valid weight (minimum 1 lb).');
-                return;
-            }
-            
-            skids[selectedTruck][index] = { width, length, weight };
-            updateSkidTable();
-            updateLoadingVisualization(selectedTruck);
-            updateLoadingInstructions();
             hideEditSkidForm();
+            updateSkidTable();
+            updateLoadingInstructions();
         }
 
-        // Update loading visualization
-        function updateLoadingVisualization(truckSize) {
-            const diagram = document.getElementById('loadingDiagram');
-            const truckVisual = diagram.querySelector('.truck-visual');
-            
-            // Clear existing skids and forklift
-            diagram.querySelectorAll('.skid-visual').forEach(skid => skid.remove());
-            diagram.querySelector('.forklift-visual')?.remove();
-            
-            // Set truck width based on size
-            truckVisual.style.width = truckSize === 53 ? '80%' : '90%';
-            
-            // Add skids
-            const truckWidth = truckVisual.offsetWidth;
-            const truckLeft = truckVisual.offsetLeft;
-            let xOffset = 10;
-            
-            skids[truckSize].forEach((skid, index) => {
-                const skidWidth = (skid.width / 48) * 100;
-                const skidElement = document.createElement('div');
-                skidElement.className = 'skid-visual';
-                skidElement.style.width = `${Math.min(skidWidth, truckWidth - xOffset - 10)}px`;
-                skidElement.style.left = `${truckLeft + xOffset}px`;
-                skidElement.textContent = `Skid ${index + 1}`;
-                skidElement.title = `${skid.width}" × ${skid.length}", ${skid.weight} lbs`;
-                diagram.appendChild(skidElement);
-                
-                xOffset += skidWidth + 10;
-            });
-            
-            // Add forklift
-            const forklift = document.createElement('div');
-            forklift.className = 'forklift-visual';
-            forklift.style.left = `${truckLeft - 50}px`;
-            diagram.appendChild(forklift);
-            
-            // Animate forklift
-            animateForklift();
-            
-            // Update sequence steps
-            updateSequenceSteps(truckSize);
+        function deleteSkid(index) {
+            if (confirm('Are you sure you want to delete this skid?')) {
+                skids.splice(index, 1);
+                updateSkidTable();
+                updateLoadingInstructions();
+            }
         }
-        
-        // Improved forklift animation
-        function animateForklift() {
-            const forklift = document.querySelector('.forklift-visual');
-            const skidElements = document.querySelectorAll('.skid-visual');
-            let currentSkid = 0;
+
+        function updateSkidTable() {
+            skidTableBody.innerHTML = '';
             
-            // Clear any existing animation
-            clearTimeout(window.forkliftAnimation);
-            
-            function moveToNextSkid() {
-                if (currentSkid >= skidElements.length) return;
-                
-                const skid = skidElements[currentSkid];
-                const skidLeft = skid.offsetLeft;
-                const truckLeft = document.querySelector('.truck-visual').offsetLeft;
-                
-                // Move forklift to skid position
-                forklift.style.transition = 'left 1s ease-in-out';
-                forklift.style.left = `${skidLeft - 30}px`;
-                
-                // After reaching skid, move it back
-                window.forkliftAnimation = setTimeout(() => {
-                    forklift.style.transition = 'left 1.5s ease-in-out';
-                    forklift.style.left = `${truckLeft - 50}px`;
-                    currentSkid++;
-                    window.forkliftAnimation = setTimeout(moveToNextSkid, 1500);
-                }, 1000);
+            if (skids.length === 0) {
+                skidTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No skids added yet</td></tr>';
+                return;
             }
             
-            moveToNextSkid();
-        }
-        
-        function updateSequenceSteps(truckSize) {
-            const sequenceSteps = document.getElementById('sequenceSteps');
-            sequenceSteps.innerHTML = '';
-            
-            skids[truckSize].forEach((skid, index) => {
-                const step = document.createElement('div');
-                step.className = 'sequence-step';
-                step.innerHTML = `
-                    <div class="step-number">${index + 1}</div>
-                    <div>
-                        <strong>Load Skid ${index + 1}</strong><br>
-                        ${skid.width}" × ${skid.length}", ${skid.weight} lbs<br>
-                        Position: ${index === 0 ? 'Front of truck' : `After Skid ${index}`}
-                    </div>
+            skids.forEach((skid, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>SKD-${skid.id.toString().padStart(3, '0')}</td>
+                    <td>${skid.width.toFixed(2)}</td>
+                    <td>${skid.length.toFixed(2)}</td>
+                    <td>${skid.weight}</td>
+                    <td>${skid.description || '-'}</td>
+                    <td class="action-buttons no-print">
+                        <button class="btn btn-edit btn-sm" onclick="editSkid(${index})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-delete btn-sm" onclick="deleteSkid(${index})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
                 `;
-                sequenceSteps.appendChild(step);
+                skidTableBody.appendChild(row);
             });
         }
-        
+
         function updateLoadingInstructions() {
-            const instructionsElement = document.getElementById('loadingInstructions');
-            
-            if (!selectedTruck || skids[selectedTruck].length === 0) {
-                instructionsElement.innerHTML = `
-                    <p>No skids added yet. Please add skids to generate loading instructions.</p>
-                `;
+            if (skids.length === 0) {
+                loadingInstructions.innerHTML = 'Add skids to see loading instructions.';
                 return;
             }
             
-            let totalWeight = 0;
-            let instructionsHTML = `
-                <p><strong>Loading Sequence:</strong> Load skids in the following order from front to back:</p>
-                <ol>
-            `;
+            // Calculate totals
+            const totalWeight = skids.reduce((sum, skid) => sum + skid.weight, 0);
+            const totalArea = skids.reduce((sum, skid) => sum + (skid.width * skid.length), 0);
             
-            skids[selectedTruck].forEach((skid, index) => {
-                totalWeight += skid.weight;
-                instructionsHTML += `
-                    <li>Skid ${index + 1} (${skid.width}" × ${skid.length}", ${skid.weight} lbs)</li>
-                `;
-            });
+            // Convert truck dimensions for comparison
+            const truckArea = truckInfo.length * truckInfo.width;
+            const usedAreaPercent = (totalArea / truckArea) * 100;
+            const usedWeightPercent = (totalWeight / truckInfo.weight) * 100;
             
-            instructionsHTML += `
-                </ol>
-                <p><strong>Total Weight:</strong> ${totalWeight} lbs</p>
-                <p><strong>Safety Check:</strong> Ensure weight is evenly distributed and does not exceed truck capacity.</p>
-                <p><i class="fas fa-exclamation-triangle"></i> <strong>Important:</strong> Follow the loading sequence above exactly.</p>
-            `;
+            // Generate instructions
+            let instructions = `<p>You have ${skids.length} skids to load:</p>
+                               <ul>
+                                 <li>Total Weight: ${totalWeight} lbs (${usedWeightPercent.toFixed(1)}% of capacity)</li>
+                                 <li>Total Area: ${totalArea.toFixed(2)} sq ft (${usedAreaPercent.toFixed(1)}% of truck space)</li>
+                               </ul>`;
             
-            instructionsElement.innerHTML = instructionsHTML;
+            if (totalWeight > truckInfo.weight) {
+                instructions += '<p class="warning">⚠️ Warning: Total weight exceeds truck capacity! Remove some skids or use a larger truck.</p>';
+            } else if (usedWeightPercent > 90) {
+                instructions += '<p class="warning">⚠️ Caution: You are approaching maximum weight capacity.</p>';
+            }
+            
+            if (totalArea > truckArea) {
+                instructions += '<p class="warning">⚠️ Warning: Total area exceeds truck space! Remove some skids or use a larger truck.</p>';
+            } else if (usedAreaPercent > 90) {
+                instructions += '<p class="warning">⚠️ Caution: You are approaching maximum space utilization.</p>';
+            }
+            
+            loadingInstructions.innerHTML = instructions;
         }
 
-        // Print loading plan
-        function printLoadingPlan() {
-            if (!selectedTruck || skids[selectedTruck].length === 0) {
-                alert('Please select a truck and add skids before printing.');
+        function loadSavedData() {
+            const savedData = localStorage.getItem('packingListData');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    
+                    // Fill form fields
+                    for (const [key, value] of Object.entries(data)) {
+                        if (key !== 'signature') {
+                            const input = document.querySelector(`[name="${key}"]`);
+                            if (input) input.value = value;
+                        }
+                    }
+                    
+                    // Load signature if exists
+                    if (data.signature) {
+                        const img = new Image();
+                        img.onload = function() {
+                            const ctx = document.getElementById('signature-pad').getContext('2d');
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        };
+                        img.src = data.signature;
+                    }
+                    
+                    console.log("Loaded saved data");
+                } catch (e) {
+                    console.error("Error loading saved data:", e);
+                }
+            }
+        }
+        
+        function saveFormData() {
+            const formData = new FormData(document.getElementById('packing-list-form'));
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            // Add signature if exists
+            if (!signaturePad.isEmpty()) {
+                data['signature'] = signaturePad.toDataURL();
+            }
+            
+            localStorage.setItem('packingListData', JSON.stringify(data));
+            
+            // Show save status
+            const saveStatus = document.getElementById('save-status');
+            saveStatus.style.display = 'block';
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                saveStatus.style.display = 'none';
+            }, 3000);
+        }
+        
+        function clearForm() {
+            if (!confirm('Are you sure you want to clear the entire form? This cannot be undone.')) {
                 return;
             }
             
-            let totalWeight = 0;
-            let printContent = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Loading Plan for ${selectedTruck} Feet Truck</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; }
-                        h1 { color: #007bff; }
-                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                        th { background-color: #007bff; color: white; }
-                        .header { display: flex; align-items: center; margin-bottom: 20px; }
-                        .header img { height: 60px; margin-right: 20px; }
-                        .instructions { background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 20px 0; }
-                        .footer { margin-top: 30px; font-size: 0.9em; color: #666; }
-                        .sequence-step { display: flex; margin-bottom: 10px; }
-                        .step-number { width: 25px; height: 25px; background-color: #007bff; color: white; 
-                                      border-radius: 50%; display: flex; align-items: center; 
-                                      justify-content: center; margin-right: 10px; font-size: 0.8em; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <img src="https://www.dessa.com/wp-content/uploads/2020/07/dessa-logo.png" alt="Dessa Logo" onerror="this.src='https://via.placeholder.com/60?text=Dessa+Logo'">
-                        <div>
-                            <h1>Forklift Loading Plan</h1>
-                            <p><strong>Truck Size:</strong> ${selectedTruck} Feet</p>
-                        </div>
-                    </div>
-                    
-                    <h2>Skid Details</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Skid ID</th>
-                                <th>Width (in)</th>
-                                <th>Length (in)</th>
-                                <th>Weight (lbs)</th>
-                                <th>Position</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-            
-            skids[selectedTruck].forEach((skid, index) => {
-                totalWeight += skid.weight;
-                const position = (index === 0) ? "Front of truck" : 
-                               (index === skids[selectedTruck].length - 1) ? "Back of truck" : 
-                               `After skid ${index}`;
-                
-                printContent += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${skid.width}</td>
-                        <td>${skid.length}</td>
-                        <td>${skid.weight}</td>
-                        <td>${position}</td>
-                    </tr>
-                `;
+            // Clear all input fields
+            const form = document.getElementById('packing-list-form');
+            const inputs = form.querySelectorAll('input[type="text"], input[type="date"]');
+            inputs.forEach(input => {
+                input.value = '';
             });
             
-            printContent += `
-                        </tbody>
-                    </table>
-                    
-                    <div class="instructions">
-                        <h3>Loading Instructions</h3>
-                        <p><strong>Total Weight:</strong> ${totalWeight} lbs</p>
-                        <p><strong>Loading Sequence:</strong></p>
-            `;
+            // Clear signature
+            signaturePad.clear();
+            document.getElementById('signature-error').style.display = 'none';
             
-            skids[selectedTruck].forEach((skid, index) => {
-                printContent += `
-                    <div class="sequence-step">
-                        <div class="step-number">${index + 1}</div>
-                        <div>
-                            <strong>Load Skid ${index + 1}</strong><br>
-                            ${skid.width}" × ${skid.length}", ${skid.weight} lbs<br>
-                            Position: ${index === 0 ? 'Front of truck' : `After Skid ${index}`}
-                        </div>
-                    </div>
-                `;
+            // Clear saved data from storage
+            localStorage.removeItem('packingListData');
+            
+            // Show cleared status
+            const saveStatus = document.getElementById('save-status');
+            saveStatus.textContent = 'Form cleared successfully';
+            saveStatus.style.color = '#3498db';
+            saveStatus.style.display = 'block';
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                saveStatus.style.display = 'none';
+                saveStatus.textContent = 'Progress saved automatically';
+                saveStatus.style.color = '#27ae60';
+            }, 3000);
+        }
+
+        // Enhanced print functionality
+        function beforePrint() {
+            // Add any pre-print modifications here
+            console.log('Preparing to print...');
+        }
+        
+        function afterPrint() {
+            // Add any post-print cleanup here
+            console.log('Printing completed or cancelled');
+        }
+        
+        // Set up print event listeners
+        if (window.matchMedia) {
+            const mediaQueryList = window.matchMedia('print');
+            mediaQueryList.addListener(mql => {
+                if (mql.matches) {
+                    beforePrint();
+                } else {
+                    afterPrint();
+                }
+            });
+        }
+        
+        window.onbeforeprint = beforePrint;
+        window.onafterprint = afterPrint;
+
+        // Utility function to reset all forms (optional)
+        function resetAllForms() {
+            document.getElementById('truckInfoForm').reset();
+            skids = [];
+            nextSkidId = 1;
+            updateSkidTable();
+            updateLoadingInstructions();
+            
+            const form = document.getElementById('packing-list-form');
+            const inputs = form.querySelectorAll('input[type="text"], input[type="date"]');
+            inputs.forEach(input => {
+                input.value = '';
             });
             
-            printContent += `
-                        <p><strong>Safety Checks:</strong></p>
-                        <ul>
-                            <li>Ensure skids are properly secured</li>
-                            <li>Distribute weight evenly from side to side</li>
-                            <li>Do not exceed truck weight capacity</li>
-                            <li>Use proper lifting techniques</li>
-                            <li>Wear appropriate safety gear</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="footer">
-                        <p><strong>Generated on:</strong> ${new Date().toLocaleString()}</p>
-                        <p>Dessa Delivery Request System</p>
-                    </div>
-                </body>
-                </html>
-            `;
+            signaturePad.clear();
+            document.getElementById('signature-error').style.display = 'none';
             
-            const win = window.open('', '_blank');
-            win.document.write(printContent);
-            win.document.close();
-            setTimeout(() => {
-                win.print();
-            }, 500);
+            // Switch back to truck info page
+            packingListPage.classList.remove('active');
+            skidDetailsPage.classList.remove('active');
+            truckInfoPage.classList.add('active');
+            
+            // Clear saved data
+            localStorage.removeItem('packingListData');
         }
     </script>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
