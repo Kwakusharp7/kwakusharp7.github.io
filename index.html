@@ -1011,6 +1011,9 @@
                 penColor: 'rgb(0, 0, 0)'
             });
             
+            // Debug log to confirm initialization
+            console.log('Signature pad initialized:', signaturePad);
+            
             // Adjust canvas coordinate space
             function resizeCanvas() {
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
@@ -1037,6 +1040,8 @@
             // Ensure the canvas is interactive
             if (!signaturePad) {s
                 console.error('Signature pad failed to initialize.');
+            } else {
+                console.log('Signature pad is ready for input.');
             }
 
             // Clear button
