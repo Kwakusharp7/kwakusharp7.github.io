@@ -1035,7 +1035,7 @@
             canvas.addEventListener('touchend', preventScrolling, { passive: false });
 
             // Ensure the canvas is interactive
-            if (!signaturePad) {
+            if (!signaturePad) {s
                 console.error('Signature pad failed to initialize.');
             }
 
@@ -1483,6 +1483,10 @@
             
             // Clear saved data
             localStorage.removeItem('packingListData');
+        }
+
+        function editSkid(index) {
+            showEditSkidForm(index); // Ensure the edit form is displayed
         }
     </script>
 </body>
