@@ -390,13 +390,14 @@
             border-radius: 4px;
             margin: 10px 0;
             position: relative;
-            height: 120px;
+            height: 200px;
             background-color: #f9f9f9;
         }
         
         #signature-pad {
             width: 100%;
             height: 100%;
+            touch-action: none;
         }
         
         .signature-clear {
@@ -526,6 +527,47 @@
                 box-shadow: none;
                 padding: 20px;
             }
+            
+            .print-truck-info {
+                margin-top: 20px;
+                padding: 15px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background-color: #f9f9f9;
+                display: block !important;
+            }
+            
+            .print-truck-info h4 {
+                margin-top: 0;
+                color: var(--primary-blue);
+            }
+            
+            .print-skids-table {
+                margin-top: 20px;
+                width: 100%;
+                border-collapse: collapse;
+            }
+            
+            .print-skids-table th {
+                background-color: var(--light-gray);
+                text-align: left;
+                padding: 8px;
+                border: 1px solid #ddd;
+            }
+            
+            .print-skids-table td {
+                padding: 8px;
+                border: 1px solid #ddd;
+            }
+            
+            .print-section-title {
+                font-size: 18px;
+                color: var(--primary-blue);
+                margin-top: 25px;
+                margin-bottom: 10px;
+                border-bottom: 2px solid var(--medium-gray);
+                padding-bottom: 5px;
+            }
         }
         
         /* Responsive adjustments */
@@ -563,13 +605,17 @@
             .logo-container {
                 margin-bottom: 15px;
             }
+            
+            .signature-container {
+                height: 150px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Dessa</h1>
+            <h1>Desa</h1>
             <p>Complete Loading & Packing Solution</p>
         </div>
         
@@ -748,7 +794,7 @@
                 <div class="document-container">
                     <div class="packing-header">
                         <div class="logo-container">
-                            <img src=". /img.webp" alt="Company Logo">
+                            <img src="./img.webp" alt="Company Logo">
                         </div>
                         <div style="flex-grow: 1;">
                             <div class="packing-title"># TRUCK</div>
@@ -874,7 +920,7 @@
                             <div style="margin-top: 20px;">
                                 <label class="required">SIGNATURE:</label>
                                 <div class="signature-container">
-                                    <canvas id="signature-pad"></canvas>
+                                    <canvas id="signature-pad" width="500" height="200"></canvas>
                                     <button type="button" class="signature-clear">Clear Signature</button>
                                 </div>
                                 <div class="signature-required" id="signature-error">Signature is required</div>
@@ -882,12 +928,35 @@
                         </div>
                         
                         <div class="action-buttons no-print">
-                            <button type="button" class="action-button print-button" onclick="window.print()">Print</button>
+                            <button type="button" class="action-button print-button" id="printPackingListBtn">Print</button>
                             <button type="button" class="action-button save-button" id="save-btn">Save Progress</button>
                             <button type="button" class="action-button clear-button" id="clear-btn">Clear Form</button>
                         </div>
                         <div class="save-status" id="save-status">Progress saved automatically</div>
                     </form>
+                    
+                    <!-- Hidden div for printing truck and skid info -->
+                    <div id="printTruckInfo" class="print-truck-info" style="display: none;">
+                        <h4 class="print-section-title">Truck Information</h4>
+                        <p><strong>ID:</strong> <span id="printTruckId"></span></p>
+                        <p><strong>Dimensions:</strong> <span id="printTruckDimensions"></span></p>
+                        <p><strong>Weight Capacity:</strong> <span id="printTruckWeight"></span></p>
+                        
+                        <h4 class="print-section-title">Skid Details</h4>
+                        <table class="print-skids-table">
+                            <thead>
+                                <tr>
+                                    <th>Skid ID</th>
+                                    <th>Width (ft)</th>
+                                    <th>Length (ft)</th>
+                                    <th>Weight (lbs)</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody id="printSkidsBody">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 
                 <div class="button-group no-print" style="margin-top: 30px;">
@@ -935,10 +1004,10 @@
             // Initialize skid table
             updateSkidTable();
             
-            // Initialize signature pad when packing list page is shown
+            // Initialize signature pad
             const canvas = document.getElementById('signature-pad');
             signaturePad = new SignaturePad(canvas, {
-                backgroundColor: 'rgb(249, 249, 249)',
+                backgroundColor: 'rgb(255, 255, 255)',
                 penColor: 'rgb(0, 0, 0)'
             });
             
@@ -948,12 +1017,44 @@
                 canvas.width = canvas.offsetWidth * ratio;
                 canvas.height = canvas.offsetHeight * ratio;
                 canvas.getContext('2d').scale(ratio, ratio);
-                signaturePad.clear();
+                signaturePad.clear(); // otherwise isEmpty() might return incorrect value
             }
             
-            window.addEventListener('resize', resizeCanvas);
+            // Initial resize
             resizeCanvas();
             
+            // Handle window resize events
+            window.addEventListener('resize', function() {
+                // Fix for mobile devices
+                if (window.innerHeight > window.innerWidth) {
+                    // Portrait mode
+                    canvas.style.width = '100%';
+                    canvas.style.height = 'auto';
+                } else {
+                    // Landscape mode
+                    canvas.style.width = '100%';
+                    canvas.style.height = '200px';
+                }
+                resizeCanvas();
+            });
+
+            // Clear button
+            document.querySelector('.signature-clear').addEventListener('click', function() {
+                signaturePad.clear();
+                document.getElementById('signature-error').style.display = 'none';
+                saveFormData();
+            });
+
+            // Fix for mobile devices
+            function preventScrolling(e) {
+                e.preventDefault();
+            }
+            
+            // Disable scrolling when touching the canvas
+            canvas.addEventListener('touchstart', preventScrolling, { passive: false });
+            canvas.addEventListener('touchmove', preventScrolling, { passive: false });
+            canvas.addEventListener('touchend', preventScrolling, { passive: false });
+
             // Load saved data if available
             loadSavedData();
             
@@ -977,12 +1078,6 @@
                 }
             });
             
-            document.querySelector('.signature-clear').addEventListener('click', function() {
-                signaturePad.clear();
-                document.getElementById('signature-error').style.display = 'none';
-                saveFormData();
-            });
-            
             // Manual save button
             document.getElementById('save-btn').addEventListener('click', function() {
                 saveFormData();
@@ -997,51 +1092,30 @@
             });
         });
 
+        // Navigation functions
         function proceedToSkidDetails() {
-            // Get form values
-            const truckId = document.getElementById('truckId').value.trim();
-            const length = parseFloat(document.getElementById('length').value);
-            const width = parseFloat(document.getElementById('width').value);
-            const weight = parseInt(document.getElementById('weight').value);
-            
-            // Validate inputs
-            if (!truckId || isNaN(length) || isNaN(width) || isNaN(weight)) {
-                alert('Please fill all fields with valid values');
-                return;
-            }
-            
-            if (length <= 0 || width <= 0 || weight <= 0) {
-                alert('All measurements must be greater than zero');
+            if (!truckInfoForm.checkValidity()) {
+                truckInfoForm.reportValidity();
                 return;
             }
             
             // Save truck info
             truckInfo = {
-                truckId,
-                length,
-                width,
-                weight
+                id: document.getElementById('truckId').value,
+                length: parseFloat(document.getElementById('length').value),
+                width: parseFloat(document.getElementById('width').value),
+                weight: parseFloat(document.getElementById('weight').value)
             };
             
             // Update truck size display
-            truckSizeSpan.textContent = `${length}ft × ${width}ft (${weight}lbs capacity)`;
+            truckSizeSpan.textContent = `${truckInfo.id} (${truckInfo.length}ft × ${truckInfo.width}ft, ${truckInfo.weight}lbs)`;
             
-            // Switch to skid details page
+            // Switch pages
             truckInfoPage.classList.remove('active');
             skidDetailsPage.classList.add('active');
             
-            // Reset skid list for new truck
-            skids = [];
-            nextSkidId = 1;
-            updateSkidTable();
+            // Update loading instructions
             updateLoadingInstructions();
-        }
-
-        function cancelForm() {
-            if(confirm('Are you sure you want to cancel? All entered data will be lost.')) {
-                document.getElementById('truckInfoForm').reset();
-                console.log('Form cancelled');
-            }
         }
 
         function goBackToTruckInfo() {
@@ -1051,42 +1125,15 @@
 
         function proceedToPackingList() {
             if (skids.length === 0) {
-                alert('Please add at least one skid before proceeding to packing list');
+                alert('Please add at least one skid before proceeding.');
                 return;
             }
             
-            // Calculate totals
-            const totalWeight = skids.reduce((sum, skid) => sum + skid.weight, 0);
-            const totalArea = skids.reduce((sum, skid) => sum + (skid.width * skid.length), 0);
-            const truckArea = truckInfo.length * truckInfo.width;
-            
-            // Check for warnings
-            let warnings = [];
-            if (totalWeight > truckInfo.weight) {
-                warnings.push('Total weight exceeds truck capacity');
-            }
-            if (totalArea > truckArea) {
-                warnings.push('Total area exceeds truck space');
-            }
-            
-            if (warnings.length > 0) {
-                if (!confirm('Warnings detected:\n\n' + warnings.join('\n') + '\n\nAre you sure you want to proceed?')) {
-                    return;
-                }
-            }
-            
-            // Switch to packing list page
             skidDetailsPage.classList.remove('active');
             packingListPage.classList.add('active');
             
-            // Set today's date as default
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('date').value = today;
-            document.getElementById('requested-delivery').value = today;
-            
-            // Set truck ID in work order field
-                        // Set truck ID in work order field
-                        document.getElementById('work-order').value = truckInfo.truckId;
+            // Update the print section with current data
+            updatePrintSection();
         }
 
         function goBackToSkidDetails() {
@@ -1095,64 +1142,34 @@
         }
 
         function completePackingList() {
-            // Validate required fields
-            const requiredFields = [
-                'date', 'work-order', 'project-name', 'project-address',
-                'requested-delivery', 'requested-by', 'carrier',
-                'consignee', 'consignee-address', 'site-contact',
-                'site-phone', 'received-by'
-            ];
-            
-            let isValid = true;
-            requiredFields.forEach(fieldId => {
-                const field = document.getElementById(fieldId);
-                if (!field.value.trim()) {
-                    field.style.borderColor = 'var(--danger-red)';
-                    isValid = false;
-                } else {
-                    field.style.borderColor = '';
-                }
-            });
-            
-            // Validate signature
-            if (signaturePad.isEmpty()) {
-                document.getElementById('signature-error').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('signature-error').style.display = 'none';
-            }
-            
-            if (!isValid) {
-                alert('Please fill all required fields and provide a signature');
+            if (!validatePackingListForm()) {
                 return;
             }
             
-            // In a real application, you would submit the form data to a server
-            const formData = new FormData(document.getElementById('packing-list-form'));
-            const packingData = {};
-            for (let [key, value] of formData.entries()) {
-                packingData[key] = value;
-            }
-            
-            // Add truck and skid information
-            packingData.truckInfo = truckInfo;
-            packingData.skids = skids;
-            
-            // Add signature
-            packingData.signature = signaturePad.toDataURL();
-            
-            console.log('Completed packing list:', packingData);
-            
-            // Show success message
+            // Here you would typically send the data to a server
             alert('Packing list completed successfully!');
             
-            // Optionally reset the form or redirect
-            // resetAllForms();
+            // Clear the form and return to truck info
+            clearForm();
+            packingListPage.classList.remove('active');
+            truckInfoPage.classList.add('active');
+        }
+
+        function cancelForm() {
+            if (confirm('Are you sure you want to cancel? All unsaved data will be lost.')) {
+                clearForm();
+                skidDetailsPage.classList.remove('active');
+                packingListPage.classList.remove('active');
+                truckInfoPage.classList.add('active');
+            }
         }
 
         // Skid management functions
         function showAddSkidForm() {
             document.getElementById('addSkidForm').style.display = 'block';
+            document.getElementById('editSkidForm').style.display = 'none';
+            
+            // Reset form
             document.getElementById('skidWidth').value = '';
             document.getElementById('skidLength').value = '';
             document.getElementById('skidWeight').value = '';
@@ -1164,42 +1181,45 @@
             document.getElementById('addSkidForm').style.display = 'none';
         }
 
+        function showEditSkidForm(index) {
+            document.getElementById('addSkidForm').style.display = 'none';
+            document.getElementById('editSkidForm').style.display = 'block';
+            
+            // Fill form with skid data
+            const skid = skids[index];
+            document.getElementById('editSkidIndex').value = index;
+            document.getElementById('editSkidWidth').value = skid.width;
+            document.getElementById('editSkidLength').value = skid.length;
+            document.getElementById('editSkidWeight').value = skid.weight;
+            document.getElementById('editSkidDescription').value = skid.description || '';
+        }
+
+        function hideEditSkidForm() {
+            document.getElementById('editSkidForm').style.display = 'none';
+        }
+
         function addSkid() {
             const width = parseFloat(document.getElementById('skidWidth').value);
             const length = parseFloat(document.getElementById('skidLength').value);
             const weight = parseFloat(document.getElementById('skidWeight').value);
             const description = document.getElementById('skidDescription').value;
             
-            if (isNaN(width) || isNaN(length) || isNaN(weight)) {
-                alert('Please enter valid values for all fields');
+            if (isNaN(width) || isNaN(length) || isNaN(weight) || width <= 0 || length <= 0 || weight <= 0) {
+                alert('Please enter valid dimensions and weight for the skid.');
                 return;
             }
             
             skids.push({
-                id: nextSkidId++,
-                width,
-                length,
-                weight,
-                description
+                id: `SKID-${nextSkidId++}`,
+                width: width,
+                length: length,
+                weight: weight,
+                description: description
             });
             
             hideAddSkidForm();
             updateSkidTable();
             updateLoadingInstructions();
-        }
-
-        function editSkid(index) {
-            const skid = skids[index];
-            document.getElementById('editSkidForm').style.display = 'block';
-            document.getElementById('editSkidIndex').value = index;
-            document.getElementById('editSkidWidth').value = skid.width;
-            document.getElementById('editSkidLength').value = skid.length;
-            document.getElementById('editSkidWeight').value = skid.weight;
-            document.getElementById('editSkidDescription').value = skid.description;
-        }
-
-        function hideEditSkidForm() {
-            document.getElementById('editSkidForm').style.display = 'none';
         }
 
         function saveEditSkid() {
@@ -1209,17 +1229,17 @@
             const weight = parseFloat(document.getElementById('editSkidWeight').value);
             const description = document.getElementById('editSkidDescription').value;
             
-            if (isNaN(width) || isNaN(length) || isNaN(weight)) {
-                alert('Please enter valid values for all fields');
+            if (isNaN(width) || isNaN(length) || isNaN(weight) || width <= 0 || length <= 0 || weight <= 0) {
+                alert('Please enter valid dimensions and weight for the skid.');
                 return;
             }
             
             skids[index] = {
                 ...skids[index],
-                width,
-                length,
-                weight,
-                description
+                width: width,
+                length: length,
+                weight: weight,
+                description: description
             };
             
             hideEditSkidForm();
@@ -1243,13 +1263,17 @@
                 return;
             }
             
+            let totalWeight = 0;
+            
             skids.forEach((skid, index) => {
+                totalWeight += skid.weight;
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>SKD-${skid.id.toString().padStart(3, '0')}</td>
+                    <td>${skid.id}</td>
                     <td>${skid.width.toFixed(2)}</td>
                     <td>${skid.length.toFixed(2)}</td>
-                    <td>${skid.weight}</td>
+                    <td>${skid.weight.toFixed(2)}</td>
                     <td>${skid.description || '-'}</td>
                     <td class="action-buttons no-print">
                         <button class="btn btn-edit btn-sm" onclick="editSkid(${index})">
@@ -1262,42 +1286,53 @@
                 `;
                 skidTableBody.appendChild(row);
             });
+            
+            // Add total row
+            const totalRow = document.createElement('tr');
+            totalRow.style.fontWeight = 'bold';
+            totalRow.innerHTML = `
+                <td colspan="2">Total</td>
+                <td></td>
+                <td>${totalWeight.toFixed(2)}</td>
+                <td colspan="2"></td>
+            `;
+            skidTableBody.appendChild(totalRow);
         }
 
         function updateLoadingInstructions() {
             if (skids.length === 0) {
-                loadingInstructions.innerHTML = 'Add skids to see loading instructions.';
+                loadingInstructions.innerHTML = '<p>Add skids to see loading instructions.</p>';
                 return;
             }
             
             // Calculate totals
             const totalWeight = skids.reduce((sum, skid) => sum + skid.weight, 0);
             const totalArea = skids.reduce((sum, skid) => sum + (skid.width * skid.length), 0);
-            
-            // Convert truck dimensions for comparison
-            const truckArea = truckInfo.length * truckInfo.width;
-            const usedAreaPercent = (totalArea / truckArea) * 100;
+            const truckArea = truckInfo.width * truckInfo.length;
+
+            // Calculate percentages
             const usedWeightPercent = (totalWeight / truckInfo.weight) * 100;
-            
+            const usedAreaPercent = (totalArea / truckArea) * 100;
+
             // Generate instructions
             let instructions = `<p>You have ${skids.length} skids to load:</p>
-                               <ul>
-                                 <li>Total Weight: ${totalWeight} lbs (${usedWeightPercent.toFixed(1)}% of capacity)</li>
-                                 <li>Total Area: ${totalArea.toFixed(2)} sq ft (${usedAreaPercent.toFixed(1)}% of truck space)</li>
-                               </ul>`;
-            
+                                 <ul>
+                                     <li>Total Weight: ${totalWeight} lbs (${usedWeightPercent.toFixed(1)}% of capacity)</li>
+                                     <li>Total Area: ${totalArea.toFixed(2)} sq ft (${usedAreaPercent.toFixed(1)}% of truck space)</li>
+                                 </ul>`;
+
             if (totalWeight > truckInfo.weight) {
                 instructions += '<p class="warning">⚠️ Warning: Total weight exceeds truck capacity! Remove some skids or use a larger truck.</p>';
             } else if (usedWeightPercent > 90) {
                 instructions += '<p class="warning">⚠️ Caution: You are approaching maximum weight capacity.</p>';
             }
-            
+
             if (totalArea > truckArea) {
                 instructions += '<p class="warning">⚠️ Warning: Total area exceeds truck space! Remove some skids or use a larger truck.</p>';
             } else if (usedAreaPercent > 90) {
                 instructions += '<p class="warning">⚠️ Caution: You are approaching maximum space utilization.</p>';
             }
-            
+
             loadingInstructions.innerHTML = instructions;
         }
 
@@ -1334,19 +1369,31 @@
         }
         
         function saveFormData() {
-            const formData = new FormData(document.getElementById('packing-list-form'));
-            const data = {};
+            const formData = {
+                truckInfo: truckInfo,
+                skids: skids,
+                nextSkidId: nextSkidId,
+                packingList: {
+                    date: document.getElementById('date').value,
+                    workOrder: document.getElementById('work-order').value,
+                    projectName: document.getElementById('project-name').value,
+                    projectAddress: document.getElementById('project-address').value,
+                    requestedDelivery: document.getElementById('requested-delivery').value,
+                    requestedBy: document.getElementById('requested-by').value,
+                    carrier: document.getElementById('carrier').value,
+                    consignee: document.getElementById('consignee').value,
+                    consigneeAddress: document.getElementById('consignee-address').value,
+                    siteContact: document.getElementById('site-contact').value,
+                    sitePhone: document.getElementById('site-phone').value,
+                    deliveryDate: document.getElementById('delivery-date').value,
+                    packagedBy: document.getElementById('packaged-by').value,
+                    checkedBy: document.getElementById('checked-by').value,
+                    receivedBy: document.getElementById('received-by').value,
+                    signature: signaturePad.isEmpty() ? null : signaturePad.toDataURL()
+                }
+            };
             
-            for (let [key, value] of formData.entries()) {
-                data[key] = value;
-            }
-            
-            // Add signature if exists
-            if (!signaturePad.isEmpty()) {
-                data['signature'] = signaturePad.toDataURL();
-            }
-            
-            localStorage.setItem('packingListData', JSON.stringify(data));
+            localStorage.setItem('desaPackingData', JSON.stringify(formData));
             
             // Show save status
             const saveStatus = document.getElementById('save-status');
@@ -1423,12 +1470,8 @@
             updateSkidTable();
             updateLoadingInstructions();
             
-            const form = document.getElementById('packing-list-form');
-            const inputs = form.querySelectorAll('input[type="text"], input[type="date"]');
-            inputs.forEach(input => {
-                input.value = '';
-            });
-            
+            // Clear packing list form
+            document.getElementById('packing-list-form').reset();
             signaturePad.clear();
             document.getElementById('signature-error').style.display = 'none';
             
