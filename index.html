@@ -1017,26 +1017,27 @@
                 canvas.width = canvas.offsetWidth * ratio;
                 canvas.height = canvas.offsetHeight * ratio;
                 canvas.getContext('2d').scale(ratio, ratio);
-                signaturePad.clear(); // otherwise isEmpty() might return incorrect value
+                signaturePad.clear(); // Clear the canvas to ensure proper initialization
             }
             
             // Initial resize
             resizeCanvas();
             
             // Handle window resize events
-            window.addEventListener('resize', function() {
-                // Fix for mobile devices
-                if (window.innerHeight > window.innerWidth) {
-                    // Portrait mode
-                    canvas.style.width = '100%';
-                    canvas.style.height = 'auto';
-                } else {
-                    // Landscape mode
-                    canvas.style.width = '100%';
-                    canvas.style.height = '200px';
-                }
-                resizeCanvas();
-            });
+            window.addEventListener('resize', resizeCanvas);
+
+            // Fix for mobile devices: Prevent scrolling when interacting with the canvas
+            function preventScrolling(e) {
+                e.preventDefault();
+            }
+            canvas.addEventListener('touchstart', preventScrolling, { passive: false });
+            canvas.addEventListener('touchmove', preventScrolling, { passive: false });
+            canvas.addEventListener('touchend', preventScrolling, { passive: false });
+
+            // Ensure the canvas is interactive
+            if (!signaturePad) {
+                console.error('Signature pad failed to initialize.');
+            }
 
             // Clear button
             document.querySelector('.signature-clear').addEventListener('click', function() {
