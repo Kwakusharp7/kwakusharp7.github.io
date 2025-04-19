@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Desa - Complete Loading & Packing Solution</title>
+
+    <!-- Add Favicon Link Here -->
+    <!-- IMPORTANT: Replace href with the actual path to your favicon file -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- OR if using an ICO file: -->
+    <!-- <link rel="icon" href="./favicon.ico"> -->
+    <!-- End Favicon -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <style>
@@ -780,9 +788,9 @@
         <div class="header">
              <!-- Add your logo here -->
              <!-- IMPORTANT: Replace "./your-logo.png" with the correct path to your logo file -->
-             <img src="./img.webp" alt="Desa Company Logo" class="header-logo">
+             <img src="./your-logo.png" alt="Desa Company Logo" class="header-logo">
              <!-- End logo -->
-            
+            <h1>Desa</h1>
             <p>Complete Loading & Packing Solution</p>
         </div>
 
@@ -872,7 +880,7 @@
                                  <i class="fas fa-times"></i> Cancel
                              </button>
                              <button type="submit" class="btn btn-primary" id="saveSkidBtn">
-                                 
+                                 {/* Text set dynamically by JS */}
                              </button>
                          </div>
                      </form>
@@ -907,7 +915,7 @@
                             <tr style="font-weight: bold; background-color: var(--light-gray);">
                                 <td colspan="3">Totals: <span id="totalSkidCount">0</span> Skids</td>
                                 <td id="totalSkidWeight">0.00 lbs</td>
-                                <td colspan="2"></td> 
+                                <td colspan="2"></td> {/* Adjusted colspan */}
                             </tr>
                         </tfoot>
                     </table>
@@ -1269,7 +1277,7 @@
              if (data && data !== 'data:,') { // Check if data is not empty before trying to load
                  signaturePad.fromDataURL(data); // Redraw with correct scaling
              }
-             console.log("Canvas resized");
+             // console.log("Canvas resized"); // Less noisy logging
         }
 
 
@@ -1339,7 +1347,7 @@
             // Example: fetch('/api/save-packing-data', { method: 'POST', body: JSON.stringify(appState) });
             try {
                 localStorage.setItem(APP_STATE_KEY, JSON.stringify(appState));
-                console.log("State saved:", new Date().toLocaleTimeString(), appState);
+                // console.log("State saved:", new Date().toLocaleTimeString(), appState); // Less verbose
                 if (showStatus) {
                     showSaveStatus("Progress saved successfully!");
                 }
