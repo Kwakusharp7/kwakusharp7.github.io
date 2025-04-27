@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desa - Admin Dashboard</title>
+    <link rel="icon" type="image/png" href="favicon.png"> <!-- Use your favicon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Optional: Add library for dynamic tables like DataTables -->
+    <!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css"> -->
+
+    <style>
+        /* --- Reusing Variables from previous CSS --- */
+        :root {
+            --primary-blue: #0056b3;
+            --secondary-blue: #007bff;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #343a40; /* Sidebar background color */
+            --text-muted: #6c757d;
+            --danger-red: #dc3545;
+            --success-green: #28a745;
+            --white: #ffffff;
+            --border-radius: 6px;
+            --box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* Softer shadow for dashboard */
+            --sidebar-width: 260px;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: var(--light-gray);
+            margin: 0;
+            color: var(--dark-gray);
+            line-height: 1.6;
+            display: flex; /* Use flexbox for layout */
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Styles --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--dark-gray); /* Dark sidebar */
+            color: var(--white);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            position: fixed; /* Fixed sidebar */
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 10px 20px 20px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        /* --- UPDATED LOGO CSS --- */
+        .sidebar-logo {
+            height: 45px;   /* Set desired height */
+            width: auto;    /* Allow width to adjust automatically */
+            max-width: 80%; /* Prevent it becoming too wide if original is large */
+            margin-bottom: 10px;
+            display: block; /* Treat image as a block for centering */
+            margin-left: auto; /* Auto margins for horizontal centering */
+            margin-right: auto;/* Auto margins for horizontal centering */
+            object-fit: contain; /* Ensures image scales nicely within its bounds */
+            /* filter: brightness(0) invert(1); */ /* <<< REMOVED/COMMENTED OUT - This was likely the issue for a white logo */
+        }
+        /* --- END UPDATED LOGO CSS --- */
+
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--white);
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1; /* Allow nav to fill space */
+        }
+
+        .sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: #adb5bd; /* Lighter text for links */
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            border-left: 4px solid transparent; /* Indicator for active link */
+        }
+        .sidebar-nav li a i {
+             width: 20px; /* Fixed width for icons */
+             text-align: center;
+             font-size: 1.1em;
+        }
+
+
+        .sidebar-nav li a:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--white);
+        }
+
+        .sidebar-nav li a.active {
+            background-color: rgba(0, 123, 255, 0.1); /* Use secondary blue with opacity */
+            color: var(--white);
+            font-weight: 500;
+            border-left-color: var(--secondary-blue);
+        }
+
+        .sidebar-footer {
+            padding: 15px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.8rem;
+            color: #adb5bd;
+            text-align: center;
+        }
+
+
+        /* --- Main Content Area --- */
+        .main-content {
+            margin-left: var(--sidebar-width); /* Offset by sidebar width */
+            flex-grow: 1; /* Take remaining width */
+            padding: 0;
+            background-color: var(--light-gray);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Top Header Bar --- */
+        .header-bar {
+            background-color: var(--white);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--medium-gray);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            position: sticky; /* Make header sticky */
+            top: 0;
+            z-index: 999;
+        }
+
+        .header-title h1 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-profile i { font-size: 1.3rem; color: var(--text-muted); }
+        .user-profile span { font-size: 0.9rem; font-weight: 500; }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .logout-btn:hover { color: var(--danger-red); }
+
+        /* --- Page Content --- */
+        .page-content {
+            padding: 30px;
+            flex-grow: 1;
+        }
+
+        /* --- Dashboard Cards --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Responsive grid */
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-left: 5px solid var(--primary-blue); /* Accent color */
+            transition: transform 0.2s ease;
+        }
+        .stat-card:hover { transform: translateY(-3px); }
+
+        .stat-card .icon {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            opacity: 0.8;
+        }
+
+        .stat-card .info h4 {
+            margin: 0 0 5px 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        .stat-card .info p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Card color variations */
+        .stat-card.green { border-left-color: var(--success-green); }
+        .stat-card.green .icon { color: var(--success-green); }
+        .stat-card.orange { border-left-color: #fd7e14; } /* Example orange */
+        .stat-card.orange .icon { color: #fd7e14; }
+        .stat-card.red { border-left-color: var(--danger-red); }
+        .stat-card.red .icon { color: var(--danger-red); }
+
+
+        /* --- Data Table Styles --- */
+        .data-container {
+            background-color: var(--white);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px; /* Added margin between containers */
+        }
+
+        .data-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap; /* Wrap on smaller screens */
+            gap: 15px;
+        }
+        .data-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .search-bar input {
+            padding: 8px 12px;
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            min-width: 250px;
+        }
+        .add-button { /* Style for Add Project etc. */
+             background-color: var(--success-green);
+             color: var(--white);
+             padding: 8px 15px;
+             font-size: 0.9rem;
+             border: none;
+             border-radius: var(--border-radius);
+             cursor: pointer;
+             display: inline-flex;
+             align-items: center;
+             gap: 5px;
+             transition: background-color 0.2s ease;
+        }
+        .add-button:hover { background-color: #218838; }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        table.data-table th, table.data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        table.data-table th {
+            background-color: var(--light-gray); /* Lighter header for tables */
+            font-weight: 600;
+            color: var(--dark-gray);
+            white-space: nowrap;
+        }
+
+        table.data-table tbody tr:hover {
+            background-color: #f1f8ff; /* Subtle hover */
+        }
+
+        .action-buttons a, .action-buttons button {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-right: 10px;
+            font-size: 1.1rem;
+            transition: color 0.2s ease;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+         .action-buttons a:hover, .action-buttons button:hover { color: var(--primary-blue); }
+         .action-buttons a.delete:hover, .action-buttons button.delete:hover { color: var(--danger-red); }
+         .action-buttons a:last-child, .action-buttons button:last-child { margin-right: 0; }
+
+        /* Status Badge Example */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 15px; /* Pill shape */
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .status-planned { background-color: #cfe2ff; color: #0a58ca; } /* Light blue */
+        .status-loaded { background-color: #d1e7dd; color: #146c43; } /* Light green */
+        .status-delivered { background-color: #e2e3e5; color: #41464b; } /* Light gray */
+        .status-active { background-color: #d1e7dd; color: #146c43; } /* Use green for Active */
+        .status-inactive { background-color: #e2e3e5; color: #41464b; } /* Use gray for Inactive */
+
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1050; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: relative; /* Needed for close button positioning */
+            animation: fadeInModal 0.3s ease-out;
+        }
+        @keyframes fadeInModal {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--medium-gray);
+            margin-bottom: 20px;
+        }
+         .modal-header h3 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            line-height: 1;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0;
+        }
+         .modal-close-btn:hover {
+            color: var(--dark-gray);
+        }
+        .modal-footer {
+            text-align: right;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid var(--medium-gray);
+        }
+        /* Add form-group styling within modal if needed */
+        .modal .form-group { margin-bottom: 15px; }
+        .modal .form-control {
+            /* Reuse existing form-control styles */
+            width: 100%;
+            padding: 10px 12px; /* Slightly smaller padding maybe */
+            border: 1px solid #ced4da;
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+        }
+         .modal select.form-control {
+             appearance: auto; /* Allow default dropdown arrow in modal */
+         }
+
+
+        /* Responsive Adjustments */
+        @media (max-width: 992px) {
+            :root { --sidebar-width: 220px; }
+            .main-content { margin-left: var(--sidebar-width); }
+            .stats-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+        }
+
+        @media (max-width: 768px) {
+             body { display: block; }
+             .sidebar { width: 100%; height: auto; position: relative; box-shadow: var(--box-shadow); }
+             .sidebar-nav ul { display: flex; overflow-x: auto; }
+             .sidebar-nav li { flex-shrink: 0; }
+             .sidebar-nav li a { border-left: none; border-bottom: 4px solid transparent; }
+             .sidebar-nav li a.active { border-bottom-color: var(--secondary-blue); }
+             .main-content { margin-left: 0; }
+             .header-bar { padding: 10px 15px; }
+             .header-title h1 { font-size: 1.3rem; }
+             .page-content { padding: 15px; }
+             .stats-grid { gap: 15px; }
+             .stat-card { padding: 15px; }
+             .data-header { flex-direction: column; align-items: stretch; }
+             .search-bar input { width: 100%; min-width: auto; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <!-- MAKE SURE this path points correctly to your image file -->
+            <img src="./img.webp" alt="Desa Logo" class="sidebar-logo">
+            <h2 class="sidebar-title">Admin Panel</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="#loads"><i class="fas fa-truck-loading"></i> Load Management</a></li>
+                <li><a href="#projects"><i class="fas fa-briefcase"></i> Project Management</a></li>
+                <li><a href="#users"><i class="fas fa-users"></i> User Management</a></li>
+                <li><a href="#reports"><i class="fas fa-chart-line"></i> Reports</a></li>
+                <li><a href="#settings"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            © 2025 Desa Systems - Programmer Stephen Kwaku Aniagyei
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Header Bar -->
+        <header class="header-bar">
+            <div class="header-title">
+                 <h1 id="pageTitle">Dashboard Overview</h1>
+            </div>
+            <div class="header-actions">
+                <div class="user-profile">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Admin User</span>
+                </div>
+                <button class="logout-btn" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="page-content">
+
+            <!-- Section: Dashboard Overview -->
+            <section id="dashboard-section" class="dashboard-section">
+                <div class="stats-grid">
+                    <div class="stat-card green"><div class="icon"><i class="fas fa-truck"></i></div><div class="info"><h4 id="statLoadsToday">0</h4><p>Loads Today</p></div></div>
+                    <div class="stat-card"><div class="icon"><i class="fas fa-pallet"></i></div><div class="info"><h4 id="statTotalSkids">0</h4><p>Total Skids Managed</p></div></div>
+                    <div class="stat-card orange"><div class="icon"><i class="fas fa-briefcase"></i></div><div class="info"><h4 id="statActiveProjects">0</h4><p>Active Projects</p></div></div>
+                    <div class="stat-card red"><div class="icon"><i class="fas fa-exclamation-triangle"></i></div><div class="info"><h4 id="statOverweightLoads">0</h4><p>Loads Overweight (Est.)</p></div></div>
+                </div>
+                <div class="data-container">
+                    <div class="data-header"><h3>Recent Loads</h3><div class="search-bar"><input type="text" id="loadSearchInput" placeholder="Search Loads..."></div></div>
+                    <div class="table-responsive"><table class="data-table" id="loadsTable"><thead><tr><th>Truck ID</th><th>Project</th><th>Date Entered</th><th>Skids</th><th>Weight (lbs)</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+                </div>
+            </section>
+
+             <!-- Section: Project Management -->
+             <section id="projects-section" class="dashboard-section" style="display: none;">
+                <div class="data-container">
+                    <div class="data-header"><h3>Manage Projects</h3><button class="add-button" id="addProjectBtn"><i class="fas fa-plus"></i> Add Project</button></div>
+                    <div class="table-responsive"><table class="data-table" id="projectsTable"><thead><tr><th>Code</th><th>Name</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+                </div>
+             </section>
+
+             <!-- Section: Load Details View -->
+              <section id="load-details-section" class="dashboard-section" style="display: none;">
+                    <h2>Load Details for <span id="loadDetailTruckId"></span></h2>
+                    <div class="data-container">
+                        <p><strong>Truck ID:</strong> <span id="loadDetailTruckIdDisplay"></span></p>
+                        <p><strong>Project:</strong> <span id="loadDetailProject"></span></p>
+                        <p><strong>Date Entered:</strong> <span id="loadDetailDate"></span></p>
+                        <p><strong>Status:</strong> <span id="loadDetailStatus" class="status-badge"></span></p>
+                        <p><strong>Truck Dimensions:</strong> <span id="loadDetailDimensions"></span></p>
+                        <p><strong>Weight Capacity:</strong> <span id="loadDetailCapacity"></span> lbs</p>
+                        <hr>
+                        <h3>Skids (<span id="loadDetailSkidCount">0</span>) - Total Weight: <span id="loadDetailTotalWeight">0.00</span> lbs</h3>
+                        <div class="table-responsive"><table class="data-table"><thead><tr><th>ID</th><th>W(ft)</th><th>L(ft)</th><th>Weight(lbs)</th><th>Desc.</th></tr></thead><tbody id="loadDetailSkidsTable"></tbody></table></div>
+                         <hr>
+                        <h3>Packing List Info</h3>
+                        <p><strong>WO#:</strong> <span id="loadDetailWO"></span> | <strong>Delivery Date:</strong> <span id="loadDetailDelDate"></span> | <strong>Actual Del. Date:</strong> <span id="loadDetailActualDelDate"></span></p>
+                        <p><strong>Consignee:</strong> <span id="loadDetailConsignee"></span></p>
+                        <p><strong>Site Contact:</strong> <span id="loadDetailSiteContact"></span> | <strong>Site Phone:</strong> <span id="loadDetailSitePhone"></span></p>
+                        <p><strong>Packaged By:</strong> <span id="loadDetailPackagedBy"></span> | <strong>Loaded By:</strong> <span id="loadDetailLoadedBy"></span> | <strong>Requested By:</strong> <span id="loadDetailRequestedBy"></span></p>
+                        <p><strong>Carrier:</strong> <span id="loadDetailCarrier"></span></p>
+                        <p><strong>Driver Printed Name:</strong> <span id="loadDetailDriver"></span></p>
+                        <div><strong>Driver Signature:</strong><br><img id="loadDetailSignature" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Driver Signature" style="max-width: 300px; border: 1px solid #ccc; margin-top: 5px; display: none;"></div>
+                    </div>
+                    <button class="btn btn-secondary" style="margin-top: 20px;" onclick="showSection('#dashboard-section', 'Load Management')"><i class="fas fa-arrow-left"></i> Back to Loads</button>
+              </section>
+
+             <!-- Section: User Management -->
+              <section id="users-section" class="dashboard-section" style="display: none;">
+                    <div class="data-container">
+                        <div class="data-header"><h3>User Management</h3><button class="add-button" id="addUserBtn"><i class="fas fa-user-plus"></i> Add User</button></div>
+                        <div class="table-responsive"><table class="data-table" id="usersTable"><thead><tr><th>Username</th><th>Role</th><th>Last Login</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+                    </div>
+              </section>
+
+             <!-- Section: Reports -->
+              <section id="reports-section" class="dashboard-section" style="display: none;">
+                   <div class="data-container">
+                       <h3>Reports</h3>
+                       <p>Select criteria to generate a report.</p>
+                       <div class="row">
+                           <div class="col-md-4">
+                               <label for="reportType">Report Type:</label>
+                               <select id="reportType" class="form-control" style="padding: 8px 12px; border: 1px solid var(--medium-gray); border-radius: var(--border-radius);">
+                                   <option value="loadsPerProject">Loads per Project</option>
+                                   <option value="weightByDate">Weight Summary by Date</option>
+                               </select>
+                           </div>
+                            <div class="col-md-4">
+                               <label for="reportStartDate">Start Date:</label>
+                               <input type="date" id="reportStartDate" class="form-control" style="padding: 8px 12px; border: 1px solid var(--medium-gray); border-radius: var(--border-radius);">
+                           </div>
+                            <div class="col-md-4">
+                               <label for="reportEndDate">End Date:</label>
+                               <input type="date" id="reportEndDate" class="form-control" style="padding: 8px 12px; border: 1px solid var(--medium-gray); border-radius: var(--border-radius);">
+                           </div>
+                       </div>
+                       <button class="btn btn-primary" style="margin-top: 15px;" id="generateReportBtn"><i class="fas fa-cogs"></i> Generate Report</button>
+                       <hr>
+                       <h4>Report Results</h4>
+                       <pre id="reportResults" style="background-color: #eee; padding: 15px; border-radius: var(--border-radius); min-height: 100px; overflow-x: auto;">Select criteria and click Generate.</pre>
+                   </div>
+              </section>
+
+             <!-- Section: Settings -->
+              <section id="settings-section" class="dashboard-section" style="display: none;">
+                   <div class="data-container">
+                       <h3>Settings</h3>
+                       <form id="settingsForm">
+                           <p>Configure application settings.</p>
+                           <div class="form-group row">
+                               <label class="col-md-4 col-form-label">Default Weight Unit:</label>
+                               <div class="col-md-8"><input type="text" class="form-control" value="lbs" disabled></div>
+                           </div>
+                           <div class="form-group row">
+                               <label for="settingAdminEmail" class="col-md-4 col-form-label">Admin Notification Email:</label>
+                               <div class="col-md-8"><input type="email" id="settingAdminEmail" class="form-control" placeholder="Enter email for notifications"></div>
+                           </div>
+                           <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Settings</button>
+                       </form>
+                   </div>
+              </section>
+
+        </div> <!-- End page-content -->
+    </main>
+
+    <!-- Add/Edit Project Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                 <h3 id="projectModalTitle">Add New Project</h3>
+                 <button type="button" class="modal-close-btn" onclick="closeModal('projectModal')">×</button>
+            </div>
+            <form id="projectForm" novalidate>
+                 <input type="hidden" id="editProjectId">
+                 <div class="form-group">
+                     <label for="projectCode">Project Code <span style="color:red;">*</span></label>
+                     <input type="text" id="projectCode" class="form-control" required pattern="\S+.*">
+                     <div class="invalid-feedback" style="display: none; color: var(--danger-red); font-size: 0.85rem;">Project code is required.</div>
+                 </div>
+                 <div class="form-group">
+                     <label for="projectName">Project Name <span style="color:red;">*</span></label>
+                     <input type="text" id="projectName" class="form-control" required pattern="\S+.*">
+                      <div class="invalid-feedback" style="display: none; color: var(--danger-red); font-size: 0.85rem;">Project name is required.</div>
+                 </div>
+                 <div class="form-group">
+                     <label for="projectStatus">Status</label>
+                     <select id="projectStatus" class="form-control">
+                         <option value="Active" selected>Active</option>
+                         <option value="Inactive">Inactive</option>
+                     </select>
+                 </div>
+                <div class="modal-footer">
+                     <button type="button" class="btn btn-secondary" onclick="closeModal('projectModal')">Cancel</button>
+                     <button type="submit" class="btn btn-primary" id="saveProjectBtn">Save Project</button>
+                 </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                 <h3 id="userModalTitle">Add New User</h3>
+                 <button type="button" class="modal-close-btn" onclick="closeModal('userModal')">×</button>
+            </div>
+            <form id="userForm" novalidate>
+                <input type="hidden" id="editUsername">
+                <div class="form-group">
+                    <label for="username">Username <span style="color:red;">*</span></label>
+                    <input type="text" id="username" class="form-control" required pattern="\S+">
+                    <div class="invalid-feedback" style="display: none; color: var(--danger-red); font-size: 0.85rem;">Username is required.</div>
+                </div>
+                 <div class="form-group">
+                    <label for="userRole">Role</label>
+                    <select id="userRole" class="form-control">
+                        <option value="Admin" selected>Administrator</option>
+                        <option value="Viewer">Viewer (Read Only)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password <span id="passwordRequiredIndicator" style="color:red;">*</span></label>
+                    <input type="password" id="password" class="form-control" placeholder="Enter new password (required for new users)">
+                    <div class="invalid-feedback" style="display: none; color: var(--danger-red); font-size: 0.85rem;">Password is required for new users.</div>
+                    <small class="text-muted">Leave blank to keep existing password when editing.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('userModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveUserBtn">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- External JS Libraries -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script> -->
+    <!-- <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script> -->
+
+    <script>
+        // Simulate Data Store using localStorage (FOR DEMO PURPOSES ONLY)
+        const DB_LOADS = 'desaAdminLoads_v2'; // Updated key to reset old data if needed
+        const DB_PROJECTS = 'desaAdminProjects_v2';
+        const DB_USERS = 'desaAdminUsers_v2';
+        const DB_SETTINGS = 'desaAdminSettings_v2';
+
+        // --- Default empty signature placeholder ---
+        const EMPTY_SIGNATURE = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; // 1x1 transparent gif
+
+        let appData = {
+             loads: [],
+             projects: [],
+             users: [],
+             settings: {}
+        };
+
+        // Function to load data from localStorage
+        function loadData() {
+            const storedLoads = localStorage.getItem(DB_LOADS);
+            const storedProjects = localStorage.getItem(DB_PROJECTS);
+            const storedUsers = localStorage.getItem(DB_USERS);
+            const storedSettings = localStorage.getItem(DB_SETTINGS);
+
+            // Helper to generate unique IDs (better than simple increment for demo)
+             const generateId = (prefix = 'id') => `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+            // Sample Load Data Structure (More detailed for Load View)
+            const defaultLoads = [
+                 {
+                     id: generateId('load'), truckId: 'TRUCK-ABC', projectCode: '47290', dateEntered: '2023-10-27 10:30',
+                     truckInfo: { length: 53, width: 8.5, weight: 45000 }, // Store truck info
+                     skids: [
+                         {id: 'S1', width: 4, length: 4, weight: 500, description: 'Pallet 1'},
+                         {id: 'S2', width: 4, length: 4, weight: 600, description: ''},
+                         {id: 'S3', width: 4, length: 4, weight: 550, description: 'Fragile'}
+                         ],
+                     packingList: {
+                         date: '2023-10-27', workOrder: 'WO-111', projectName: 'We Wai Kai', projectAddress: 'Site Address A',
+                         requestedBy: 'Client A', carrier: 'Fast Freight', consignee: 'Job Site A', consigneeAddress: 'Delivery Addr A',
+                         siteContact: 'Foreman Bill', sitePhone: '555-111-2222', deliveryDate: '2023-10-28', packagedBy: 'PK',
+                         checkedBy: 'LD', receivedBy: 'John D.', signature: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=' // Replace with a real sample signature data URL if you have one
+                        },
+                     status: 'Loaded' // Planned, Loaded, Delivered
+                 },
+                 {
+                     id: generateId('load'), truckId: 'PLATE-123', projectCode: '47402', dateEntered: '2023-10-27 09:15',
+                     truckInfo: { length: 48, width: 8, weight: 40000 }, skids: [{id: 'P1', width: 8, length: 6, weight: 1200}],
+                     packingList: { date: '2023-10-27', workOrder: 'WO-112', driver: 'Jane S.', signature: null }, // No signature example
+                     status: 'Planned'
+                 },
+            ];
+             const defaultProjects = [
+                 { code: '47290', name: 'We Wai Kai', status: 'Active' }, { code: '47402', name: '104Ave', status: 'Active' },
+                 { code: '45863', name: 'DeVille Tower', status: 'Active' }, { code: '47578', name: 'Place 800', status: 'Inactive' },
+                 { code: '47773', name: 'River Cree Hotel', status: 'Active' },
+             ];
+             const defaultUsers = [ { username: 'admin', role: 'Admin', lastLogin: '2023-10-27 11:00', passwordHash: 'demo' } ]; // Never store plain passwords! Hashing needed in backend.
+             const defaultSettings = { adminEmail: 'admin@example.com' };
+
+            appData.loads = storedLoads ? JSON.parse(storedLoads) : defaultLoads;
+            appData.projects = storedProjects ? JSON.parse(storedProjects) : defaultProjects;
+            appData.users = storedUsers ? JSON.parse(storedUsers) : defaultUsers;
+            appData.settings = storedSettings ? JSON.parse(storedSettings) : defaultSettings;
+
+            // Add simple calculation for skidCount and totalWeight if missing from stored data (backward compatibility)
+            appData.loads.forEach(load => {
+                if (load.skids && (!load.skidCount || !load.totalWeight)) {
+                    load.skidCount = load.skids.length;
+                    load.totalWeight = load.skids.reduce((sum, skid) => sum + (skid.weight || 0), 0);
+                } else if (!load.skids) {
+                    load.skidCount = 0;
+                    load.totalWeight = 0;
+                }
+            });
+
+
+            console.log("Data loaded (Demo)", appData);
+        }
+
+        // Function to save data to localStorage
+        function saveData() {
+             try {
+                 localStorage.setItem(DB_LOADS, JSON.stringify(appData.loads));
+                 localStorage.setItem(DB_PROJECTS, JSON.stringify(appData.projects));
+                 localStorage.setItem(DB_USERS, JSON.stringify(appData.users));
+                 localStorage.setItem(DB_SETTINGS, JSON.stringify(appData.settings));
+                 console.log("Data saved (Demo)");
+             } catch (e) { console.error("Error saving data:", e); alert("Error saving data."); }
+        }
+
+        // --- UI Rendering Functions ---
+        function getProjectDisplay(projectCode) {
+            const project = appData.projects.find(p => p.code === projectCode);
+            return project ? `${project.code} – ${project.name}` : (projectCode || 'N/A');
+        }
+
+        function getStatusBadge(status, type = 'load') { // type can be 'load' or 'project' or 'user'
+             let statusClass = '';
+             let statusText = status || (type === 'load' ? 'Planned' : 'Unknown'); // Default status text
+
+             if (type === 'load') {
+                  statusClass = `status-${statusText.toLowerCase()}`;
+             } else if (type === 'project' || type === 'user') { // Use Active/Inactive colors for projects/users
+                  statusClass = statusText === 'Active' ? 'status-active' : 'status-inactive';
+             }
+
+             return `<span class="status-badge ${statusClass}">${statusText}</span>`;
+        }
+
+        function renderLoadsTable(loadsToRender = appData.loads) {
+             const tableBody = $('#loadsTable tbody');
+             tableBody.empty();
+             if (!loadsToRender || loadsToRender.length === 0) {
+                 tableBody.append('<tr><td colspan="7" style="text-align:center;">No loads found.</td></tr>'); return;
+             }
+             loadsToRender.forEach(load => {
+                 const projectName = getProjectDisplay(load.projectCode);
+                 const statusBadge = getStatusBadge(load.status, 'load');
+                 const isDelivered = load.status === 'Delivered';
+                 const row = `
+                     <tr data-load-id="${load.id}">
+                         <td>${load.truckId || 'N/A'}</td><td>${projectName}</td><td>${load.dateEntered || 'N/A'}</td>
+                         <td>${load.skidCount || 0}</td><td>${load.totalWeight?.toFixed(2) || '0.00'}</td><td>${statusBadge}</td>
+                         <td class="action-buttons">
+                             <a href="#" onclick="viewLoadDetails('${load.id}'); return false;" title="View Details"><i class="fas fa-eye"></i></a>
+                             <a href="#" ${isDelivered ? 'style="color:#ccc; pointer-events:none;"' : `onclick="editLoad('${load.id}'); return false;"`} title="${isDelivered?'Cannot edit':'Edit'}"><i class="fas fa-edit"></i></a>
+                             <button class="delete" ${isDelivered ? 'style="color:#ccc; pointer-events:none;" disabled' : ''} onclick="deleteLoad('${load.id}', this)" title="${isDelivered?'Cannot delete':'Delete'}"><i class="fas fa-trash"></i></button>
+                         </td>
+                     </tr>`;
+                 tableBody.append(row);
+             });
+         }
+
+        function renderProjectsTable() {
+             const tableBody = $('#projectsTable tbody');
+             tableBody.empty();
+             if (appData.projects.length === 0) { tableBody.append('<tr><td colspan="4" style="text-align:center;">No projects found.</td></tr>'); return; }
+             appData.projects.forEach(project => {
+                 const statusBadge = getStatusBadge(project.status, 'project');
+                 const row = `
+                     <tr data-project-code="${project.code}"><td>${project.code}</td><td>${project.name}</td><td>${statusBadge}</td>
+                         <td class="action-buttons">
+                             <a href="#" onclick="openProjectModal('${project.code}'); return false;" title="Edit"><i class="fas fa-edit"></i></a>
+                             <button class="delete" onclick="deleteProject('${project.code}', this)" title="Delete"><i class="fas fa-trash"></i></button>
+                         </td>
+                     </tr>`;
+                 tableBody.append(row);
+             });
+         }
+
+        function renderUsersTable() {
+            const tableBody = $('#usersTable tbody');
+            tableBody.empty();
+            if (appData.users.length === 0) { tableBody.append('<tr><td colspan="4" style="text-align:center;">No users found.</td></tr>'); return; }
+            appData.users.forEach(user => {
+                const row = `
+                    <tr data-username="${user.username}"><td>${user.username}</td><td>${user.role || 'N/A'}</td><td>${user.lastLogin || 'Never'}</td>
+                        <td class="action-buttons">
+                            <a href="#" onclick="openUserModal('${user.username}'); return false;" title="Edit"><i class="fas fa-edit"></i></a>
+                            <button class="delete" ${user.username === 'admin' ? 'disabled style="color:#ccc;"' : ''} onclick="deleteUser('${user.username}', this)" title="${user.username === 'admin' ? 'Cannot delete default admin' : 'Delete'}"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                tableBody.append(row);
+            });
+        }
+
+        // --- CRUD Functions ---
+
+        // Loads
+        function deleteLoad(loadId, buttonElement) { /* (Keep existing function) */
+             if (!confirm(`Delete load ${loadId}?`)) return;
+             appData.loads = appData.loads.filter(l => l.id !== loadId); saveData();
+             $(buttonElement).closest('tr').fadeOut(function(){ $(this).remove(); }); updateDashboardStats(); console.log(`Deleted load ${loadId}`);
+        }
+        function editLoad(loadId) { alert(`Editing load ${loadId} - Needs integration with entry form.`); }
+        function viewLoadDetails(loadId) { /* (Keep existing, but enhance data display) */
+            const load = appData.loads.find(l => l.id === loadId); if (!load) { alert("Load not found!"); return; }
+            const projectName = getProjectDisplay(load.projectCode);
+            const statusBadge = getStatusBadge(load.status, 'load');
+            $('#loadDetailTruckId').text(load.truckId || 'N/A'); $('#loadDetailTruckIdDisplay').text(load.truckId || 'N/A');
+            $('#loadDetailProject').text(projectName); $('#loadDetailDate').text(load.dateEntered || 'N/A');
+            $('#loadDetailStatus').replaceWith(statusBadge); // Replace entire badge span
+             $('#loadDetailDimensions').text(`${load.truckInfo?.length || '?'}ft L x ${load.truckInfo?.width || '?'}ft W`);
+             $('#loadDetailCapacity').text(load.truckInfo?.weight || '?');
+            $('#loadDetailSkidCount').text(load.skidCount || 0); $('#loadDetailTotalWeight').text(load.totalWeight?.toFixed(2) || '0.00');
+            // Packing List
+            const pl = load.packingList || {};
+            $('#loadDetailWO').text(pl.workOrder || 'N/A'); $('#loadDetailDelDate').text(pl.date || 'N/A'); // Assuming pl.date is delivery date for now
+            $('#loadDetailActualDelDate').text(pl.deliveryDate || 'N/A'); // Actual delivery date
+            $('#loadDetailConsignee').text(pl.consignee || 'N/A'); $('#loadDetailSiteContact').text(pl.siteContact || 'N/A');
+            $('#loadDetailSitePhone').text(pl.sitePhone || 'N/A'); $('#loadDetailPackagedBy').text(pl.packagedBy || 'N/A');
+            $('#loadDetailLoadedBy').text(pl.checkedBy || 'N/A'); $('#loadDetailRequestedBy').text(pl.requestedBy || 'N/A');
+            $('#loadDetailCarrier').text(pl.carrier || 'N/A'); $('#loadDetailDriver').text(pl.receivedBy || 'N/A'); // Driver printed name
+            // Signature
+            const signatureImg = $('#loadDetailSignature');
+            if (pl.signature && pl.signature !== EMPTY_SIGNATURE) { signatureImg.attr('src', pl.signature).show(); }
+            else { signatureImg.attr('src', EMPTY_SIGNATURE).hide(); } // Hide if no signature
+            // Skids Table
+            const skidsTableBody = $('#loadDetailSkidsTable'); skidsTableBody.empty();
+            if (load.skids && load.skids.length > 0) { load.skids.forEach(s => skidsTableBody.append(`<tr><td>${s.id}</td><td>${s.width}</td><td>${s.length}</td><td>${s.weight}</td><td>${s.description || '-'}</td></tr>`)); }
+            else { skidsTableBody.append('<tr><td colspan="5">No skid details.</td></tr>'); }
+            showSection('#load-details-section', `Load Details: ${load.truckId}`);
+        }
+
+
+        // Projects
+        function openProjectModal(projectCode = null) { /* (Keep existing function) */
+             const form = $('#projectForm')[0]; form.reset(); $('#editProjectId').val('');
+             $('#projectCode').prop('readonly', false).removeClass('is-invalid').next('.invalid-feedback').hide();
+             $('#projectName').removeClass('is-invalid').next('.invalid-feedback').hide();
+             if (projectCode) {
+                 const project = appData.projects.find(p => p.code === projectCode); if (!project) return;
+                 $('#projectModalTitle').text('Edit Project'); $('#editProjectId').val(project.code);
+                 $('#projectCode').val(project.code).prop('readonly', true); $('#projectName').val(project.name); $('#projectStatus').val(project.status);
+             } else { $('#projectModalTitle').text('Add New Project'); }
+             openModal('projectModal');
+         }
+        function saveProject() { /* (Enhance with validation feedback) */
+            const form = $('#projectForm')[0];
+            let isValid = true;
+            // Clear previous errors
+            $(form).find('.is-invalid').removeClass('is-invalid');
+            $(form).find('.invalid-feedback').hide();
+
+            const codeInput = $('#projectCode');
+            const nameInput = $('#projectName');
+            const code = codeInput.val().trim();
+            const name = nameInput.val().trim();
+            const status = $('#projectStatus').val();
+            const editingCode = $('#editProjectId').val();
+
+            // Basic Validation
+            if (!code) {
+                codeInput.addClass('is-invalid').next('.invalid-feedback').show(); isValid = false;
+            }
+             if (!name) {
+                nameInput.addClass('is-invalid').next('.invalid-feedback').show(); isValid = false;
+            }
+             if (!isValid) return;
+
+
+             // Check for duplicate codes when adding
+             if (!editingCode && appData.projects.some(p => p.code === code)) {
+                 alert(`Project code "${code}" already exists.`); codeInput.addClass('is-invalid'); codeInput.focus(); return;
+             }
+             const projectData = { code, name, status };
+             if (editingCode) {
+                 const index = appData.projects.findIndex(p => p.code === editingCode); if (index > -1) appData.projects[index] = projectData;
+             } else { appData.projects.push(projectData); }
+             saveData(); renderProjectsTable(); closeModal('projectModal');
+         }
+        function deleteProject(projectCode, buttonElement) { /* (Keep existing function) */
+             const project = appData.projects.find(p => p.code === projectCode); if (!project) return;
+             const isUsed = appData.loads.some(l => l.projectCode === projectCode);
+             let confirmMsg = `Delete project "${project.name}" (${project.code})?`;
+             if (isUsed) confirmMsg = `WARNING: Project "${project.name}" is used by existing loads. Deleting it may cause issues.\n\n${confirmMsg}`;
+             if (!confirm(confirmMsg)) return;
+             appData.projects = appData.projects.filter(p => p.code !== projectCode); saveData();
+             $(buttonElement).closest('tr').fadeOut(function(){ $(this).remove(); }); console.log(`Deleted project ${projectCode}`); updateDashboardStats();
+         }
+
+        // Users
+        function openUserModal(username = null) {
+             const form = $('#userForm')[0]; form.reset();
+             $('#editUsername').val(''); $('#username').prop('readonly', false).removeClass('is-invalid').next('.invalid-feedback').hide();
+             $('#password').prop('required', true).removeClass('is-invalid').next('.invalid-feedback').hide(); // Required for new
+             $('#passwordRequiredIndicator').show();
+
+             if (username) { // Editing
+                 const user = appData.users.find(u => u.username === username); if (!user) return;
+                 $('#userModalTitle').text('Edit User'); $('#editUsername').val(user.username);
+                 $('#username').val(user.username).prop('readonly', true); $('#userRole').val(user.role);
+                 $('#password').prop('required', false).attr('placeholder', 'Leave blank to keep current password'); // Not required when editing
+                 $('#passwordRequiredIndicator').hide();
+             } else { // Adding
+                 $('#userModalTitle').text('Add New User');
+                 $('#password').attr('placeholder', 'Enter password (required)');
+             }
+             openModal('userModal');
+         }
+        function saveUser() {
+             const form = $('#userForm')[0];
+             let isValid = true;
+             $(form).find('.is-invalid').removeClass('is-invalid'); $(form).find('.invalid-feedback').hide();
+
+             const usernameInput = $('#username'); const passwordInput = $('#password');
+             const username = usernameInput.val().trim(); const password = passwordInput.val(); // Don't trim password
+             const role = $('#userRole').val(); const editingUsername = $('#editUsername').val();
+
+             if (!username) { usernameInput.addClass('is-invalid').next('.invalid-feedback').show(); isValid = false; }
+             if (!editingUsername && !password) { // Password required only when adding
+                 passwordInput.addClass('is-invalid').next('.invalid-feedback').show(); isValid = false;
+             }
+              if (!isValid) return;
+
+             // Check duplicates only when adding
+             if (!editingUsername && appData.users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+                 alert(`Username "${username}" already exists.`); usernameInput.addClass('is-invalid'); usernameInput.focus(); return;
+             }
+
+             // WARNING: In a real app, NEVER store plain passwords. Hash them on the server!
+             const userData = { username, role, lastLogin: null }; // lastLogin would be updated on actual login
+             if (editingUsername) { // Update existing
+                 const index = appData.users.findIndex(u => u.username === editingUsername);
+                 if (index > -1) {
+                     appData.users[index].role = role; // Update role
+                     if (password) appData.users[index].passwordHash = `demo_hash_${password}`; // Update "hash" if password changed
+                     console.log("Updated user:", appData.users[index]);
+                 }
+             } else { // Add new
+                 userData.passwordHash = `demo_hash_${password}`; // Store "hashed" password
+                 userData.lastLogin = 'Never';
+                 appData.users.push(userData);
+                 console.log("Added user:", userData);
+             }
+             saveData(); renderUsersTable(); closeModal('userModal');
+         }
+        function deleteUser(username, buttonElement) {
+             if (username === 'admin') { alert("Cannot delete the default admin user."); return; } // Prevent deleting default admin
+             if (!confirm(`Delete user "${username}"?`)) return;
+             appData.users = appData.users.filter(u => u.username !== username); saveData();
+             $(buttonElement).closest('tr').fadeOut(function(){ $(this).remove(); }); console.log(`Deleted user ${username}`);
+         }
+
+        // Reports
+        function generateReport() {
+            const type = $('#reportType').val();
+            const start = $('#reportStartDate').val();
+            const end = $('#reportEndDate').val();
+            let results = `Report Type: ${type}\nStart Date: ${start || 'N/A'}\nEnd Date: ${end || 'N/A'}\n\n`;
+            let filteredLoads = appData.loads;
+
+             // Filter by date if both dates are provided
+             if (start && end) {
+                 filteredLoads = appData.loads.filter(l => {
+                     const loadDate = l.dateEntered?.split(' ')[0]; // Get date part
+                     return loadDate >= start && loadDate <= end;
+                 });
+             } else if (start) {
+                 filteredLoads = appData.loads.filter(l => (l.dateEntered?.split(' ')[0]) >= start);
+             } else if (end) {
+                  filteredLoads = appData.loads.filter(l => (l.dateEntered?.split(' ')[0]) <= end);
+             }
+
+
+             if (type === 'loadsPerProject') {
+                 const counts = filteredLoads.reduce((acc, load) => {
+                     const projName = getProjectDisplay(load.projectCode);
+                     acc[projName] = (acc[projName] || 0) + 1;
+                     return acc;
+                 }, {});
+                 results += "Loads per Project:\n";
+                 results += "------------------\n";
+                 for (const proj in counts) { results += `${proj}: ${counts[proj]}\n`; }
+                 if (Object.keys(counts).length === 0) results += "(No loads found for the selected period)\n";
+
+             } else if (type === 'weightByDate') {
+                  const weights = filteredLoads.reduce((acc, load) => {
+                      const date = load.dateEntered?.split(' ')[0] || 'Unknown Date';
+                      acc[date] = (acc[date] || 0) + (load.totalWeight || 0);
+                      return acc;
+                  }, {});
+                  results += "Total Weight per Date:\n";
+                  results += "----------------------\n";
+                  const sortedDates = Object.keys(weights).sort();
+                  sortedDates.forEach(date => { results += `${date}: ${weights[date].toFixed(2)} lbs\n`; });
+                  if (sortedDates.length === 0) results += "(No loads found for the selected period)\n";
+             } else {
+                 results += "(Selected report type not implemented yet)\n";
+             }
+
+             $('#reportResults').text(results);
+         }
+
+        // Settings
+        function loadSettings() {
+            $('#settingAdminEmail').val(appData.settings.adminEmail || '');
+        }
+        function saveSettings() {
+            appData.settings.adminEmail = $('#settingAdminEmail').val().trim();
+            saveData();
+            alert("Settings saved (Demo).");
+        }
+
+        // --- Dashboard Stats Update ---
+        function updateDashboardStats() { /* (Keep existing function) */
+            const loadsToday = appData.loads.filter(l => l.dateEntered?.startsWith(new Date().toISOString().split('T')[0])).length;
+            const totalSkids = appData.loads.reduce((sum, l) => sum + (l.skidCount || 0), 0);
+            const activeProjects = appData.projects.filter(p => p.status === 'Active').length;
+            const overweightLoads = 0; // Placeholder
+
+            $('#statLoadsToday').text(loadsToday); $('#statTotalSkids').text(totalSkids.toLocaleString());
+            $('#statActiveProjects').text(activeProjects); $('#statOverweightLoads').text(overweightLoads);
+        }
+
+        // --- Modal Helpers ---
+        function openModal(modalId) { $(`#${modalId}`).css('display', 'flex'); }
+        function closeModal(modalId) { $(`#${modalId}`).hide(); $(`#${modalId} form`)[0]?.reset(); $(`#${modalId} .is-invalid`).removeClass('is-invalid'); $(`#${modalId} .invalid-feedback`).hide(); }
+
+        // --- Utility: Section Navigation ---
+        function showSection(sectionId, title) { /* (Keep existing function) */
+            $('.dashboard-section').hide(); $(sectionId).show(); $('#pageTitle').text(title);
+        }
+
+
+        // --- Initial Setup ---
+        $(document).ready(function() {
+            loadData(); // Load data first
+
+            // --- Sidebar Navigation ---
+            $('.sidebar-nav a').on('click', function(e) {
+                 const targetHref = $(this).attr('href');
+                 if (!targetHref || !targetHref.startsWith('#')) return; // Ignore if not a hash link
+                 e.preventDefault();
+                 $('.sidebar-nav a').removeClass('active'); $(this).addClass('active');
+                 const sectionId = targetHref;
+                 let sectionTitle = 'Dashboard'; // Default
+
+                 if (sectionId === '#dashboard' || sectionId === '#loads') {
+                     showSection('#dashboard-section', 'Dashboard Overview'); renderLoadsTable(); updateDashboardStats();
+                     if (sectionId === '#loads') { $('#pageTitle').text('Load Management'); document.getElementById('loadsTable')?.scrollIntoView({ behavior: 'smooth' }); }
+                 } else if (sectionId === '#projects') { showSection('#projects-section', 'Project Management'); renderProjectsTable(); }
+                 else if (sectionId === '#users') { showSection('#users-section', 'User Management'); renderUsersTable(); }
+                 else if (sectionId === '#reports') { showSection('#reports-section', 'Reports'); }
+                 else if (sectionId === '#settings') { showSection('#settings-section', 'Settings'); loadSettings(); }
+                 else { showSection('#dashboard-section', 'Dashboard Overview'); } // Fallback
+            });
+            $('.sidebar-nav a.active').trigger('click'); // Show initial section
+
+            // --- Search ---
+            $('#loadSearchInput').on('keyup', function() {
+                var value = $(this).val().toLowerCase();
+                const filteredLoads = appData.loads.filter(load => {
+                    const projDisp = getProjectDisplay(load.projectCode).toLowerCase();
+                    const searchString = `${load.truckId} ${projDisp} ${load.dateEntered} ${load.status}`.toLowerCase();
+                    return searchString.includes(value);
+                }); renderLoadsTable(filteredLoads);
+            });
+
+            // --- Button Clicks ---
+            $('#addProjectBtn').on('click', () => openProjectModal());
+            $('#addUserBtn').on('click', () => openUserModal());
+            $('#generateReportBtn').on('click', generateReport);
+
+            // --- Form Submissions ---
+            $('#projectForm').on('submit', function(e) { e.preventDefault(); saveProject(); });
+            $('#userForm').on('submit', function(e) { e.preventDefault(); saveUser(); });
+            $('#settingsForm').on('submit', function(e) { e.preventDefault(); saveSettings(); });
+
+            // --- Logout (Demo) ---
+            $('.logout-btn').on('click', () => { if (confirm('Log out? (Demo)')) alert("Logged out (Demo)."); });
+        });
+    </script>
+
+</body>
+</html>
