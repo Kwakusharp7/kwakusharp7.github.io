@@ -545,9 +545,16 @@
 
                  <!-- Action Buttons -->
                  <div class="d-flex justify-content-between align-items-center mb-3 mt-3 no-print">
-                     <button class="btn btn-success" onclick="showAddSkidForm()">
-                         <i class="fas fa-plus"></i> Add Skid
-                     </button>
+                     <div> <!-- Group Add and Reset buttons -->
+                         <button class="btn btn-success" onclick="showAddSkidForm()">
+                             <i class="fas fa-plus"></i> Add Skid
+                         </button>
+                         <!-- === MODIFIED: Added Reset Skids Button === -->
+                         <button id="resetSkidsBtn" type="button" class="btn btn-secondary" style="margin-left: 10px;" onclick="handleResetSkids()">
+                             <i class="fas fa-undo"></i> Reset Skids List
+                         </button>
+                         <!-- === END MODIFICATION === -->
+                     </div>
                      <button class="btn btn-print" onclick="printSkidPage()">
                          <i class="fas fa-print"></i> Print Loading Plan
                      </button>
@@ -730,6 +737,11 @@
                  <!-- Packing List Action Buttons -->
                 <div class="packing-action-buttons no-print">
                      <button type="button" class="btn btn-secondary" onclick="goBackToSkidDetails()"><i class="fas fa-arrow-left"></i> Back to Skid Details</button>
+                     <!-- === MODIFIED: Added Reset Packing List Button === -->
+                     <button id="resetPackingListBtn" type="button" class="btn btn-cancel" onclick="handleResetPackingList()">
+                         <i class="fas fa-undo"></i> Reset Form
+                     </button>
+                     <!-- === END MODIFICATION === -->
                      <button type="button" class="btn btn-print" id="printPackingListBtn"><i class="fas fa-print"></i> Print Packing List</button>
                      <button type="button" class="btn btn-primary" id="saveProgressBtn"><i class="fas fa-save"></i> Save Progress</button>
                      <button type="button" class="btn btn-success" onclick="completePackingList()"><i class="fas fa-check-circle"></i> Mark as Complete & Save</button>
@@ -913,7 +925,7 @@
                     proceedToSkidDetails();
                 } else { console.log(`Validation failed: Project=${isProjectValid}, Form=${isFormValid}`); }
             });
-            // Reset Button
+            // Reset Button (Truck Info)
             document.getElementById('resetTruckInfoBtn').addEventListener('click', handleResetClick);
 
              // Clear form errors on input (Truck Info)
@@ -930,6 +942,9 @@
             document.getElementById('saveProgressBtn').addEventListener('click', handleManualSave);
             // Print Button (Packing List)
             document.getElementById('printPackingListBtn').addEventListener('click', handlePrintPackingList);
+
+            // NOTE: The reset buttons for Skids and Packing List have their listeners
+            // attached directly via the 'onclick' attribute in the HTML.
         }
 
         // --- Event Handlers ---
@@ -1384,6 +1399,61 @@
             }
         }
         function printSkidPage() { window.print(); } // Alias for printing from skid page
+
+        // --- === NEW/MODIFIED: Reset Functions === ---
+
+        /**
+         * Handles resetting the list of skids.
+         * Clears the skids array, resets the counter, updates UI, and saves state.
+         */
+        function handleResetSkids() {
+            if (appState.skids.length === 0) {
+                alert("Skid list is already empty.");
+                return;
+            }
+            if (confirm('Are you sure you want to remove ALL skids listed for this truck? This action cannot be undone.')) {
+                console.log("Resetting skids list...");
+                appState.skids = []; // Clear the skids array
+                appState.nextSkidId = 1; // Reset the skid ID counter
+                updateSkidTable(); // Update the table display (will show "No skids")
+                updateLoadingInstructions(); // Update the summary text
+                saveState(); // Persist the changes
+                alert("Skid list has been reset.");
+            }
+        }
+
+        /**
+         * Handles resetting the Packing List form fields.
+         * Clears form inputs, signature, related app state, and saves changes.
+         */
+        function handleResetPackingList() {
+            if (confirm('Are you sure you want to reset the Packing List form? Any unsaved information in the form will be cleared.')) {
+                console.log("Resetting Packing List form...");
+                // 1. Reset the form visually
+                if (packingListForm) {
+                    packingListForm.reset(); // Clears standard input fields
+                }
+
+                // 2. Clear the signature pad
+                clearSignature(); // This already handles clearing the pad and appState.signatureData
+
+                // 3. Clear the corresponding packing list data in the app state
+                appState.packingList = {}; // Reset the data object
+
+                // 4. Re-populate fields that should persist or be auto-filled (like Project Name)
+                updatePackingListProjectName(); // Put back the project name based on truck info
+
+                // 5. Clear any validation states (optional, but good practice)
+                 packingListForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                 if(signatureErrorDiv) signatureErrorDiv.style.display = 'none';
+                 if(signatureCanvas) signatureCanvas.parentElement.style.border = '2px dashed var(--medium-gray)';
+
+                // 6. Save the cleared state
+                saveState();
+                alert("Packing List form has been reset.");
+            }
+        }
+        // --- === END NEW/MODIFIED: Reset Functions === ---
 
 
         // --- Utility ---
