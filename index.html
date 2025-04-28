@@ -440,7 +440,7 @@
                     <select id="project" name="project" class="form-control" style="width: 100%;"> <!-- form-control class helps with styling consistency -->
                         <option value="" disabled selected>Select a Project...</option>
                         <option value="47290">47290 – We Wai Kai</option>
-                        <option value="47402">47402 – 104Ave</option>
+                           <option value="47402">47402 – 104Ave</option>
                         <option value="47578">47578 - Place 800</option>
                         <option value="45863">45863 – DeVille Tower</option>
                         <option value="47773">47773 – River Cree Hotel</option>
@@ -620,7 +620,7 @@
                              </div>
                              <div class="form-field">
                                  <label for="project-name">PROJECT NAME:</label>
-                                 <input type="text" id="project-name" name="projectName" class="form-control" placeholder="Enter Project Name">
+                                 <input type="text" id="project-name" name="projectName" class="form-control" placeholder="Project Name (Auto-filled)"> <!-- Updated placeholder -->
                              </div>
                              <div class="form-field">
                                  <label for="project-address">PROJECT ADDRESS:</label>
@@ -785,6 +785,7 @@
         const signatureCanvas = document.getElementById('signature-pad');
         const signatureErrorDiv = document.getElementById('signature-error');
         const saveStatusDiv = document.getElementById('save-status');
+        const projectNameInput = document.getElementById('project-name'); // Added for quick access
         // Print Elements
         const printTruckId = document.getElementById('printTruckId');
         const printProject = document.getElementById('printProject');
@@ -807,11 +808,14 @@
             updateSkidTable();
             updateLoadingInstructions();
             // Update headers/forms if loading directly into later pages
-            if (appState.currentPage === 'skidDetailsPage') updateSkidPageHeader();
+            if (appState.currentPage === 'skidDetailsPage') {
+                updateSkidPageHeader();
+            }
             if (appState.currentPage === 'packingListPage') {
-                populatePackingListForm();
+                populatePackingListForm(); // Populate other fields first
                 updatePackingListPageHeader();
-                updatePrintSection();
+                updatePackingListProjectName(); // <<< MODIFICATION: Update project name on load
+                updatePrintSection(); // Update print section *after* project name is set
             }
             console.log("Application Initialized. Current State:", appState);
         });
@@ -826,15 +830,24 @@
                          theme: "bootstrap-5"
                      }).on('select2:open', () => { // Fix focus issue on open
                         document.querySelector('.select2-search__field').focus();
-                     });
+                     }).on('change', handleProjectChange); // <<< MODIFICATION: Call handleProjectChange on Select2 change too
+
                      console.log("Select2 initialized for Project dropdown.");
                      // Set initial value based on loaded state
                      $(projectSelect).val(appState.truckInfo.project || '').trigger('change.select2');
                  } else {
                      console.warn("jQuery or Select2 library not loaded. Project dropdown search functionality will be disabled.");
+                     // Add native change listener as fallback
+                     if (projectSelect) {
+                        projectSelect.addEventListener('change', handleProjectChange);
+                     }
                  }
              } catch (error) {
                  console.error("Error initializing Select2:", error);
+                  // Add native change listener as fallback in case of error
+                 if (projectSelect) {
+                    projectSelect.addEventListener('change', handleProjectChange);
+                 }
              }
          }
 
@@ -865,7 +878,7 @@
                 console.log('Signature pad initialized.');
             } catch(error) { console.error("Error initializing SignaturePad:", error); }
         }
-        function resizeCanvas() { /* (Keep existing resizeCanvas function) */
+        function resizeCanvas() {
              if (!signatureCanvas || !signaturePad) return;
              const ratio = Math.max(window.devicePixelRatio || 1, 1);
              const data = signaturePad.toDataURL();
@@ -880,7 +893,7 @@
                  signaturePad.fromDataURL(data);
              }
         }
-        function debounce(func, wait) { /* (Keep existing debounce function) */
+        function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
                 const later = () => { clearTimeout(timeout); func(...args); };
@@ -902,15 +915,14 @@
             });
             // Reset Button
             document.getElementById('resetTruckInfoBtn').addEventListener('click', handleResetClick);
-             // Clear project error on change
-            $(projectSelect).on('change', handleProjectChange);
-             // Clear form errors on input
+
+             // Clear form errors on input (Truck Info)
             truckInfoForm.querySelectorAll('input.form-control').forEach(input => {
                  input.addEventListener('input', handleFormInputChange.bind(null, input)); // Pass input element
              });
             // Skid Add/Edit Form
             addSkidForm.addEventListener('submit', function(e) { e.preventDefault(); saveSkid(); });
-            // Packing List Form Auto-Save
+            // Packing List Form Auto-Save (on input changes)
             packingListForm.addEventListener('input', debounce(handlePackingListInputChange, 500));
             // Signature Clear
             document.querySelector('.signature-clear').addEventListener('click', clearSignature);
@@ -920,22 +932,33 @@
             document.getElementById('printPackingListBtn').addEventListener('click', handlePrintPackingList);
         }
 
-        // --- Event Handlers (extracted from setupEventListeners for clarity) ---
+        // --- Event Handlers ---
         function handleResetClick() {
             if (confirm('Reset truck information? This cannot be undone.')) {
                 truckInfoForm.reset();
-                $(projectSelect).val('').trigger('change.select2');
+                $(projectSelect).val('').trigger('change.select2'); // Reset Select2
                 clearProjectValidationError();
                 clearTruckInfoFormErrors();
                 appState.truckInfo = { id: '', project: '', length: null, width: null, weight: null };
+                updatePackingListProjectName(); // <<< MODIFICATION: Update packing list name on reset
                 saveState();
             }
         }
+
+        // <<< MODIFICATION: Updated handleProjectChange >>>
         function handleProjectChange() {
-             if (this.value) {
+             const selectedValue = this.value;
+             if (selectedValue) {
                  clearProjectValidationError();
              }
+             // Update the appState immediately when the project changes
+             appState.truckInfo.project = selectedValue;
+             // Update the packing list field in real-time if it exists/is visible
+             updatePackingListProjectName();
+             // Optional: Save state immediately on project change if desired
+             // saveState();
          }
+
         function handleFormInputChange(inputElement) {
              if (inputElement.checkValidity()) {
                  inputElement.classList.remove('is-invalid');
@@ -943,23 +966,33 @@
                   if (feedback) feedback.style.display = 'none';
              }
          }
-        function handlePackingListInputChange() {
-             collectPackingListData();
-             saveState();
+        function handlePackingListInputChange(event) {
+             // Prevent project name input from triggering a full packing list data collection
+             // if it's the target, as it's handled separately by project selection.
+             if (event.target.id !== 'project-name') {
+                collectPackingListData();
+                saveState();
+             } else {
+                // If the user *manually* edits the project name, save that change
+                 appState.packingList.projectName = event.target.value;
+                 saveState();
+             }
          }
         function handleManualSave() {
-              collectPackingListData();
-              saveState(true);
+              collectPackingListData(); // Ensure latest data is collected
+              updatePackingListProjectName(); // Ensure project name is sync'd before save
+              saveState(true); // Save with status message
          }
         function handlePrintPackingList() {
-              collectPackingListData();
-              updatePrintSection();
+              collectPackingListData(); // Ensure latest data is collected
+              updatePackingListProjectName(); // Ensure project name is sync'd
+              updatePrintSection(); // Update print data
               window.print();
           }
 
 
         // --- Validation Helpers ---
-        function validateProjectSelection() { /* (Keep existing function) */
+        function validateProjectSelection() {
             if (!projectSelect.value) {
                  showProjectValidationError();
                  return false;
@@ -967,15 +1000,15 @@
              clearProjectValidationError();
              return true;
         }
-        function showProjectValidationError() { /* (Keep existing function) */
+        function showProjectValidationError() {
              $(projectSelect).next('.select2-container').find('.select2-selection').addClass('is-invalid');
              projectErrorDiv.style.display = 'block';
         }
-        function clearProjectValidationError() { /* (Keep existing function) */
+        function clearProjectValidationError() {
              $(projectSelect).next('.select2-container').find('.select2-selection').removeClass('is-invalid');
              projectErrorDiv.style.display = 'none';
         }
-        function validateTruckInfoForm() { /* (Keep existing function, maybe enhance feedback display) */
+        function validateTruckInfoForm() {
              clearTruckInfoFormErrors();
              const isValid = truckInfoForm.checkValidity();
              if (!isValid) {
@@ -992,7 +1025,7 @@
              }
              return isValid;
          }
-        function clearTruckInfoFormErrors() { /* (Keep existing function, ensure feedback is hidden) */
+        function clearTruckInfoFormErrors() {
              Array.from(truckInfoForm.elements).forEach(el => {
                  el.classList.remove('is-invalid');
                  const feedback = el.closest('.form-group')?.querySelector('.invalid-feedback');
@@ -1001,36 +1034,55 @@
          }
 
         // --- State Management ---
-        function saveState(showStatus = false) { /* (Keep existing function) */
+        // <<< MODIFICATION: Updated saveState >>>
+        function saveState(showStatus = false) {
              if (signaturePad && !signaturePad.isEmpty()) {
                  appState.signatureData = signaturePad.toDataURL();
              } else { appState.signatureData = null; }
-             appState.truckInfo.project = projectSelect.value || appState.truckInfo.project; // Ensure project saved
+
+             // Ensure project value in appState is current *before* saving
+             if (projectSelect) {
+                 appState.truckInfo.project = projectSelect.value || ''; // Use '' if nothing selected
+             }
+
+             // Ensure packingList object exists
+             if (!appState.packingList) {
+                 appState.packingList = {};
+             }
+             // Make sure the packing list project name reflects the main selection *unless*
+             // it has been manually overridden recently (less likely with auto-update)
+             // updatePackingListProjectName(); // Call here ensures it's updated before save
+             // appState.packingList.projectName = projectNameInput.value; // Capture current value
+
              try {
                  localStorage.setItem(APP_STATE_KEY, JSON.stringify(appState));
                  if (showStatus) showSaveStatus("Progress saved successfully!");
+                 // console.log("State saved:", appState); // Optional: for debugging
              } catch (e) { console.error("Error saving state:", e); showSaveStatus("Error saving progress.", true); }
          }
-        function loadState() { /* (Keep existing function) */
+        function loadState() {
             const savedState = localStorage.getItem(APP_STATE_KEY);
             if (savedState) {
                 try {
                     const loadedData = JSON.parse(savedState);
-                    appState = { ...appState, ...loadedData };
+                    // Merge carefully, preserving defaults if properties are missing
+                    appState.currentPage = loadedData.currentPage || 'truckInfoPage';
                     appState.truckInfo = { id: '', project: '', length: null, width: null, weight: null, ...(loadedData.truckInfo || {}) };
                     appState.skids = loadedData.skids || [];
-                    appState.nextSkidId = loadedData.nextSkidId || 1; // Load counter or default to 1
+                    appState.nextSkidId = loadedData.nextSkidId || 1;
                     appState.packingList = loadedData.packingList || {};
                     appState.signatureData = loadedData.signatureData || null;
                     console.log("State loaded successfully:", appState);
-                } catch (e) { console.error("Error loading state:", e); localStorage.removeItem(APP_STATE_KEY); }
+                } catch (e) { console.error("Error loading state:", e); localStorage.removeItem(APP_STATE_KEY); /* Reset if invalid */ }
             } else { console.log("No saved state found."); }
+            // Populate truck info fields from loaded state
             document.getElementById('truckId').value = appState.truckInfo.id || '';
             document.getElementById('length').value = appState.truckInfo.length || '';
             document.getElementById('width').value = appState.truckInfo.width || '';
             document.getElementById('weight').value = appState.truckInfo.weight || '';
+            // Note: Select2 value setting happens in initializeSelect2 after loadState
         }
-        function showSaveStatus(message, isError = false) { /* (Keep existing function) */
+        function showSaveStatus(message, isError = false) {
             if (!saveStatusDiv) return;
             saveStatusDiv.textContent = message;
             saveStatusDiv.style.color = isError ? 'var(--danger-red)' : 'var(--success-green)';
@@ -1039,56 +1091,113 @@
             saveTimeout = setTimeout(() => { saveStatusDiv.classList.remove('visible'); }, 3000);
         }
 
-
         // --- Navigation & Page Updates ---
-        function renderCurrentPage() { /* (Keep existing function) */
+        function renderCurrentPage() {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             const currentPageElement = document.getElementById(appState.currentPage);
-            if (currentPageElement) { currentPageElement.classList.add('active'); }
+            if (currentPageElement) {
+                currentPageElement.classList.add('active');
+                 // <<< MODIFICATION: Update project name if navigating TO packing list page >>>
+                 if (appState.currentPage === 'packingListPage') {
+                    updatePackingListProjectName();
+                }
+            }
             else { console.warn(`Page element ID "${appState.currentPage}" not found.`); truckInfoPage.classList.add('active'); appState.currentPage = 'truckInfoPage'; }
         }
-        function navigateTo(pageId) { /* (Keep existing function) */
-            appState.currentPage = pageId; renderCurrentPage(); saveState(); window.scrollTo(0, 0);
+        function navigateTo(pageId) {
+            appState.currentPage = pageId;
+            renderCurrentPage(); // Update display first
+            saveState(); // Save the new page state
+            window.scrollTo(0, 0);
         }
-        function proceedToSkidDetails() { /* (Keep existing function) */
+        function proceedToSkidDetails() {
+            // Collect truck info data *before* navigating
             appState.truckInfo = {
                 id: document.getElementById('truckId').value.trim(),
-                project: projectSelect.value,
+                project: projectSelect.value, // Value from the select dropdown
                 length: parseFloat(document.getElementById('length').value) || null,
                 width: parseFloat(document.getElementById('width').value) || null,
                 weight: parseFloat(document.getElementById('weight').value) || null
             };
-            updateSkidPageHeader(); updateLoadingInstructions(); navigateTo('skidDetailsPage');
+            updateSkidPageHeader();
+            updateLoadingInstructions();
+            navigateTo('skidDetailsPage'); // Navigate and save state
         }
-        function updateSkidPageHeader() { /* (Keep existing function) */
+        function updateSkidPageHeader() {
              truckIdentifierSpan.textContent = appState.truckInfo.id || 'N/A';
              truckSizeDisplaySpan.textContent = `(${appState.truckInfo.length || '?'}ft L × ${appState.truckInfo.width || '?'}ft W, ${appState.truckInfo.weight || '?'}lbs Cap.)`;
         }
         function goBackToTruckInfo() { navigateTo('truckInfoPage'); }
-        function proceedToPackingList() { /* (Keep existing function) */
-             collectPackingListData(); populatePackingListForm(); updatePackingListPageHeader(); updatePrintSection(); navigateTo('packingListPage');
-        }
-        function updatePackingListPageHeader() { /* (Keep existing function) */
+
+        // <<< MODIFICATION: Updated proceedToPackingList >>>
+        function proceedToPackingList() {
+             collectPackingListData(); // Collects current packing list form data
+             populatePackingListForm(); // Populates form based on collected/saved data
+             updatePackingListPageHeader();
+             updatePackingListProjectName(); // <<< Ensure project name is set correctly before navigating
+             updatePrintSection();
+             navigateTo('packingListPage'); // Navigate and save state
+         }
+
+        function updatePackingListPageHeader() {
              packingListTruckIdSpan.textContent = appState.truckInfo.id || 'N/A';
          }
-        function goBackToSkidDetails() { /* (Keep existing function) */
-             collectPackingListData(); navigateTo('skidDetailsPage');
+        function goBackToSkidDetails() {
+             collectPackingListData(); // Save any changes made on packing list page
+             navigateTo('skidDetailsPage');
          }
-        function completePackingList() { /* (Keep existing function) */
-             collectPackingListData();
-             if (!validatePackingListForm()) return;
-             saveState(true);
+        function completePackingList() {
+             collectPackingListData(); // Get latest data
+             updatePackingListProjectName(); // Ensure project name sync
+             if (!validatePackingListForm()) return; // Validate required fields (name, sig)
+             saveState(true); // Save final state with status message
              alert(`Packing list for Truck ${appState.truckInfo.id} completed and saved.`);
          }
 
+        // --- Helper Function to Update Packing List Project Name ---
+        // <<< NEW/MODIFIED FUNCTION >>>
+        function updatePackingListProjectName() {
+            // Only proceed if the project name input exists
+            if (!projectNameInput) {
+                // console.log("Project name input not found, likely not on packing list page.");
+                return;
+            }
+
+            const selectedProjectValue = appState.truckInfo.project;
+            let projectText = ''; // Default to empty
+
+            if (selectedProjectValue && projectSelect) {
+                // Find the option element in the *original* select dropdown
+                const selectedOption = projectSelect.querySelector(`option[value="${selectedProjectValue}"]`);
+                if (selectedOption) {
+                    projectText = selectedOption.text; // Get the display text (e.g., "47290 – We Wai Kai")
+                } else {
+                    // Fallback if the option list changed or value is somehow invalid
+                    console.warn(`Project value "${selectedProjectValue}" selected but not found in options.`);
+                    projectText = selectedProjectValue; // Use the value as a fallback
+                }
+            }
+
+            // Set the value of the 'PROJECT NAME' input field on the packing list
+            projectNameInput.value = projectText;
+            // console.log(`Set Packing List Project Name input to: "${projectText}"`);
+
+            // Update the packing list data in the app state immediately
+            // This ensures it gets saved correctly even if no other input event fires
+            if (appState.packingList) {
+                 appState.packingList.projectName = projectText;
+             }
+        }
+
+
         // --- Skid Management ---
-        function showAddSkidForm() { /* (Keep existing function) */
+        function showAddSkidForm() {
              editSkidIndexInput.value = ''; addSkidForm.reset();
              skidFormTitle.innerHTML = '<i class="fas fa-plus-circle"></i> Add New Skid';
              saveSkidBtn.innerHTML = '<i class="fas fa-plus"></i> Add Skid';
              addSkidFormContainer.style.display = 'block'; document.getElementById('skidWidth').focus();
          }
-        function showEditSkidForm(index) { /* (Keep existing function) */
+        function showEditSkidForm(index) {
              const skid = appState.skids[index]; if (!skid) return;
              editSkidIndexInput.value = index;
              document.getElementById('skidWidth').value = skid.width; document.getElementById('skidLength').value = skid.length;
@@ -1097,10 +1206,10 @@
              saveSkidBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
              addSkidFormContainer.style.display = 'block'; document.getElementById('skidWidth').focus();
          }
-        function hideAddEditSkidForm() { /* (Keep existing function) */
+        function hideAddEditSkidForm() {
              addSkidFormContainer.style.display = 'none'; addSkidForm.reset(); editSkidIndexInput.value = '';
          }
-        function saveSkid() { /* (Keep existing function) */
+        function saveSkid() {
              if (!addSkidForm.checkValidity()) { addSkidForm.reportValidity(); return; }
              const width = parseFloat(document.getElementById('skidWidth').value); const length = parseFloat(document.getElementById('skidLength').value);
              const weight = parseFloat(document.getElementById('skidWeight').value); const description = document.getElementById('skidDescription').value.trim();
@@ -1118,33 +1227,27 @@
              hideAddEditSkidForm(); updateSkidTable(); updateLoadingInstructions(); saveState();
          }
 
-        // --- !!! THIS IS THE UPDATED FUNCTION !!! ---
         function deleteSkid(index) {
              const skidId = appState.skids[index]?.id; // Get ID before deleting
              if (!skidId) {
                  console.error("Attempted to delete skid with invalid index:", index);
-                 return; // Should not happen if index is valid
+                 return;
              }
 
             if (confirm(`Are you sure you want to delete Skid ${skidId}?`)) {
                 appState.skids.splice(index, 1); // Remove the skid from the array
                 console.log(`Deleted skid ${skidId}`);
-
-                // *** ADDED: Check if skids array is now empty ***
                 if (appState.skids.length === 0) {
-                    appState.nextSkidId = 1; // Reset the counter to the default
+                    appState.nextSkidId = 1; // Reset the counter if all skids deleted
                     console.log("All skids deleted. Resetting nextSkidId to 1.");
                 }
-                // *** END ADDED CODE ***
-
                 updateSkidTable();
                 updateLoadingInstructions();
-                saveState(); // Save changes (including potential nextSkidId reset)
+                saveState(); // Save changes
             }
         }
-        // --- !!! END OF UPDATED FUNCTION !!! ---
 
-        function updateSkidTable() { /* (Keep existing function) */
+        function updateSkidTable() {
             skidTableBody.innerHTML = ''; let totalWeight = 0;
             if (appState.skids.length === 0) {
                 skidTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No skids added yet. Click "Add Skid".</td></tr>';
@@ -1157,10 +1260,10 @@
             });
             totalSkidCountSpan.textContent = appState.skids.length; totalSkidWeightSpan.textContent = `${totalWeight.toFixed(2)} lbs`;
         }
-        function updateLoadingInstructions() { /* (Keep existing function) */
+        function updateLoadingInstructions() {
             loadingInstructionsDiv.innerHTML = generateLoadingSummaryText();
         }
-        function generateLoadingSummaryText() { /* (Keep existing function) */
+        function generateLoadingSummaryText() {
             if (!appState.truckInfo.length || !appState.truckInfo.width || !appState.truckInfo.weight) return '<p>Enter complete truck information first.</p>';
             if (appState.skids.length === 0) return '<p>Add skids to see loading summary.</p>';
             const totalWeight = appState.skids.reduce((s, k) => s + (k.weight || 0), 0); const totalArea = appState.skids.reduce((s, k) => s + ((k.width || 0) * (k.length || 0)), 0);
@@ -1178,63 +1281,142 @@
 
 
         // --- Packing List ---
-        function collectPackingListData() { /* (Keep existing function) */
-             const formData = new FormData(packingListForm); appState.packingList = {};
-             for (const [key, value] of formData.entries()) { appState.packingList[key] = value; }
-         }
-        function populatePackingListForm() { /* (Keep existing function) */
-             for (const [key, value] of Object.entries(appState.packingList)) {
-                 const input = packingListForm.querySelector(`[name="${key}"]`); if (input) input.value = value || '';
+        function collectPackingListData() {
+             // Ensure packingList exists
+             if (!appState.packingList) appState.packingList = {};
+             const formData = new FormData(packingListForm);
+             for (const [key, value] of formData.entries()) {
+                 // Only update if the key is not 'projectName', which is handled separately
+                 // if (key !== 'projectName') {
+                     appState.packingList[key] = value;
+                 // }
              }
+             // Ensure the project name from state is included if not in form data somehow
+             if (!appState.packingList.hasOwnProperty('projectName')) {
+                 updatePackingListProjectName(); // This function also updates appState.packingList.projectName
+             }
+             // console.log("Collected packing list data:", appState.packingList); // Debugging
          }
-        function validatePackingListForm() { /* (Keep existing function) */
+        function populatePackingListForm() {
+             for (const [key, value] of Object.entries(appState.packingList || {})) {
+                 const input = packingListForm.querySelector(`[name="${key}"]`);
+                 if (input && key !== 'projectName') { // Don't overwrite project name here
+                      input.value = value || '';
+                 }
+             }
+             // Specifically set project name *after* other fields are populated
+             updatePackingListProjectName();
+         }
+        function validatePackingListForm() {
              let isValid = true; let firstInvalidField = null;
              packingListForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
              signatureErrorDiv.style.display = 'none'; if(signatureCanvas) signatureCanvas.parentElement.style.border = '2px dashed var(--medium-gray)';
-             const receivedByInput = document.getElementById('received-by'); if (!receivedByInput.value.trim()) { isValid = false; receivedByInput.classList.add('is-invalid'); if (!firstInvalidField) firstInvalidField = receivedByInput; }
-             if (!signaturePad || signaturePad.isEmpty()) { isValid = false; signatureErrorDiv.style.display = 'block'; if(signatureCanvas) signatureCanvas.parentElement.style.border = '2px dashed var(--danger-red)'; if (!firstInvalidField) firstInvalidField = signatureCanvas; }
-             // Add other required checks for packing list here if needed
+
+             // Check Driver Name
+             const receivedByInput = document.getElementById('received-by');
+             if (!receivedByInput || !receivedByInput.value.trim()) {
+                 isValid = false;
+                 if(receivedByInput) receivedByInput.classList.add('is-invalid');
+                 if (!firstInvalidField) firstInvalidField = receivedByInput;
+             }
+
+             // Check Signature
+             if (!signaturePad || signaturePad.isEmpty()) {
+                 isValid = false;
+                 signatureErrorDiv.style.display = 'block';
+                 if(signatureCanvas) signatureCanvas.parentElement.style.border = '2px dashed var(--danger-red)';
+                 if (!firstInvalidField) firstInvalidField = signatureCanvas;
+             }
+
+             // Add other required packing list field checks here if needed
+
              if (!isValid) {
                  alert('Please fill in all required fields (Driver Name and Signature are mandatory).');
-                 if (firstInvalidField) setTimeout(() => { firstInvalidField.focus(); firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
-             } return isValid;
+                 if (firstInvalidField) setTimeout(() => {
+                    if (firstInvalidField.focus) firstInvalidField.focus();
+                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+             }
+             return isValid;
          }
-        function clearSignature() { /* (Keep existing function) */
-             if (signaturePad) { signaturePad.clear(); signatureErrorDiv.style.display = 'none'; if(signatureCanvas) signatureCanvas.parentElement.style.border = '2px dashed var(--medium-gray)'; appState.signatureData = null; saveState(); }
+        function clearSignature() {
+             if (signaturePad) {
+                 signaturePad.clear();
+                 signatureErrorDiv.style.display = 'none';
+                 if(signatureCanvas) signatureCanvas.parentElement.style.border = '2px dashed var(--medium-gray)';
+                 appState.signatureData = null;
+                 saveState(); // Save the cleared signature state
+             }
          }
 
         // --- Printing ---
-        function updatePrintSection() { /* (Keep existing function) */
-            if (!printTruckId || !printProject || !printSkidsBody) { console.error("Print elements missing."); return; }
+        function updatePrintSection() {
+            if (!printTruckId || !printProject || !printSkidsBody || !projectSelect) { console.error("Required print elements or project select missing."); return; }
+
+            // Truck Info
             printTruckId.textContent = appState.truckInfo.id || 'N/A';
-            const selectedOpt = projectSelect.options[projectSelect.selectedIndex];
+            printTruckDimensions.textContent = `${appState.truckInfo.length||'?'}ft L × ${appState.truckInfo.width||'?'}ft W`;
+            printTruckWeight.textContent = `${appState.truckInfo.weight||'?'} lbs`;
+
+            // Project Name (get text from the select options)
             let projText = 'N/A';
-            if (appState.truckInfo.project) { const foundOpt = Array.from(projectSelect.options).find(o => o.value === appState.truckInfo.project); projText = foundOpt ? foundOpt.text : appState.truckInfo.project; }
+            if (appState.truckInfo.project) {
+                const foundOpt = Array.from(projectSelect.options).find(o => o.value === appState.truckInfo.project);
+                projText = foundOpt ? foundOpt.text : appState.truckInfo.project; // Use text if found, else value
+            }
             printProject.textContent = projText;
-            printTruckDimensions.textContent = `${appState.truckInfo.length||'?'}ft L × ${appState.truckInfo.width||'?'}ft W`; printTruckWeight.textContent = `${appState.truckInfo.weight||'?'} lbs`;
-            printTotalSkids.textContent = appState.skids.length; printSkidsBody.innerHTML = ''; let printWeightTotal = 0;
+
+            // Skid Info
+            printTotalSkids.textContent = appState.skids.length;
+            printSkidsBody.innerHTML = '';
+            let printWeightTotal = 0;
             appState.skids.forEach(skid => {
-                printWeightTotal += (skid.weight || 0); const row = printSkidsBody.insertRow();
+                printWeightTotal += (skid.weight || 0);
+                const row = printSkidsBody.insertRow();
                 row.innerHTML = `<td>${skid.id||'N/A'}</td><td>${skid.width?.toFixed(2)||'?'}</td><td>${skid.length?.toFixed(2)||'?'}</td><td>${skid.weight?.toFixed(2)||'?'}</td><td>${skid.description||'-'}</td>`;
             });
             printTotalWeight.textContent = `${printWeightTotal.toFixed(2)} lbs`;
-            if (printLoadingSummaryDiv) { let html = generateLoadingSummaryText().replace(/<h5>.*?<\/h5>/, '<h5>Loading Summary</h5>'); printLoadingSummaryDiv.innerHTML = html; }
+
+            // Loading Summary
+            if (printLoadingSummaryDiv) {
+                let html = generateLoadingSummaryText().replace(/<h5>.*?<\/h5>/, '<h5>Loading Summary</h5>'); // Replace H5 title for print context
+                printLoadingSummaryDiv.innerHTML = html;
+            }
         }
-        function printSkidPage() { window.print(); }
+        function printSkidPage() { window.print(); } // Alias for printing from skid page
 
 
         // --- Utility ---
-        function resetEntireProcess() { /* (Keep existing function) */
+        function resetEntireProcess() {
              if (confirm('Are you sure you want to clear ALL data and start over? This cannot be undone.')) {
                  localStorage.removeItem(APP_STATE_KEY);
+                 // Reset state object to defaults
                  appState = { currentPage: 'truckInfoPage', truckInfo: { id: '', project: '', length: null, width: null, weight: null }, skids: [], nextSkidId: 1, packingList: {}, signatureData: null };
-                 truckInfoForm.reset(); addSkidForm.reset(); packingListForm.reset();
-                 $(projectSelect).val('').trigger('change.select2');
+                 // Reset forms
+                 if(truckInfoForm) truckInfoForm.reset();
+                 if(addSkidForm) addSkidForm.reset();
+                 if(packingListForm) packingListForm.reset();
+                 // Reset Select2
+                 if (typeof $ !== 'undefined' && typeof $.fn.select2 === 'function') {
+                    $(projectSelect).val('').trigger('change.select2');
+                 } else if (projectSelect) {
+                     projectSelect.value = ''; // Fallback for native select
+                 }
+                 // Clear signature
                  if (signaturePad) signaturePad.clear();
-                 clearProjectValidationError(); clearTruckInfoFormErrors();
-                 updateSkidTable(); updateLoadingInstructions(); hideAddEditSkidForm();
-                 renderCurrentPage();
-                 console.log("Application Reset."); alert("Application data cleared.");
+                 // Clear validation errors
+                 clearProjectValidationError();
+                 clearTruckInfoFormErrors();
+                 if(signatureErrorDiv) signatureErrorDiv.style.display = 'none';
+                 if(signatureCanvas) signatureCanvas.parentElement.style.border = '2px dashed var(--medium-gray)';
+                 // Update UI elements
+                 updateSkidTable();
+                 updateLoadingInstructions();
+                 hideAddEditSkidForm();
+                 updatePackingListProjectName(); // Clear packing list project name too
+                 renderCurrentPage(); // Show the first page
+                 console.log("Application Reset.");
+                 alert("Application data cleared.");
              }
          }
 
