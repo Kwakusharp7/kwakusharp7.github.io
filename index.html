@@ -392,16 +392,19 @@
                                  </div>
                                  <div class="form-field">
                                      <label for="work-order">WORK ORDER NO.:</label>
-                                     <input type="text" id="work-order" name="workOrder" class="form-control" placeholder="Enter Work Order Number">
+                                     <!-- This field will be auto-filled -->
+                                     <input type="text" id="work-order" name="workOrder" class="form-control" placeholder="Work Order (Auto-filled)" readonly>
                                  </div>
                              </div>
                              <div class="form-field">
                                  <label for="project-name">PROJECT NAME:</label>
+                                 <!-- This field will be auto-filled -->
                                  <input type="text" id="project-name" name="projectName" class="form-control" placeholder="Project Name (Auto-filled)" readonly>
                              </div>
                              <div class="form-field">
                                  <label for="project-address">PROJECT ADDRESS:</label>
-                                 <input type="text" id="project-address" name="projectAddress" class="form-control" placeholder="Enter Project Site Address">
+                                 <!-- This field will be auto-filled -->
+                                 <input type="text" id="project-address" name="projectAddress" class="form-control" placeholder="Project Address (Auto-filled)" readonly>
                              </div>
                          </div>
                          <div class="divider"></div>
@@ -435,16 +438,19 @@
                              </div>
                              <div class="form-field">
                                  <label for="consignee-address">DELIVERY ADDRESS:</label>
-                                 <input type="text" id="consignee-address" name="consigneeAddress" class="form-control" placeholder="Full Delivery Address">
+                                 <!-- This field will be auto-filled -->
+                                 <input type="text" id="consignee-address" name="consigneeAddress" class="form-control" placeholder="Delivery Address (Auto-filled)">
                              </div>
                              <div class="form-row">
                                  <div class="form-field">
                                      <label for="site-contact">SITE CONTACT:</label>
-                                     <input type="text" id="site-contact" name="siteContact" class="form-control" placeholder="Name of person on site">
+                                     <!-- This field will be auto-filled -->
+                                     <input type="text" id="site-contact" name="siteContact" class="form-control" placeholder="Site Contact (Auto-filled)">
                                  </div>
                                  <div class="form-field">
                                      <label for="site-phone">SITE PHONE:</label>
-                                     <input type="tel" id="site-phone" name="sitePhone" class="form-control" pattern="[0-9]{3}-?[0-9]{3}-?[0-9]{4}" placeholder="e.g., 555-123-4567">
+                                     <!-- This field will be auto-filled -->
+                                     <input type="tel" id="site-phone" name="sitePhone" class="form-control" pattern="[0-9]{3}-?[0-9]{3}-?[0-9]{4}" placeholder="Site Phone (Auto-filled)">
                                  </div>
                              </div>
                          </div>
@@ -593,14 +599,118 @@
         };
         let signaturePad;
         let saveTimeout;
-        const APP_STATE_KEY = 'desaWorkflowData_v4'; // Incremented version for state structure changes
-        const PROJECT_OPTIONS = [
-             { value: "47290", text: "47290 – We Wai Kai" },
-             { value: "47402", text: "47402 – 104Ave" },
-             { value: "47578", text: "47578 - Place 800" },
-             { value: "45863", text: "45863 – DeVille Tower" },
-             { value: "47773", text: "47773 – River Cree Hotel" }
+        const APP_STATE_KEY = 'desaWorkflowData_v5'; // Incremented version for new project data structure
+
+        // === NEW COMPREHENSIVE PROJECT DATA (Replaces PROJECT_OPTIONS) ===
+        // Data manually correlated from the provided OCR pages.
+        // 'value' is typically the Work Order No. for uniqueness.
+        // 'text' is the display text in the dropdown.
+        // Other fields are for auto-population.
+        // !!! IMPORTANT: YOU MUST COMPLETE THIS ARRAY WITH ALL DATA FROM YOUR PDF !!!
+        const PROJECT_DATA = [
+            { value: "47603", text: "1900 West - Serina Homes (WO: 47603)", projectName: "1900 West", projectAddress: "Serina Homes", workOrder: "47603", deliveryAddress: "3350-19 Street SW, Calgary", siteContact: "Kurtis Meddins", sitePhone: "403-483-3593" },
+            { value: "47749", text: "45 Series Stock Material - Chinook Glass & Screen Ltd. (WO: 47749)", projectName: "45 Series Stock Material", projectAddress: "Chinook Glass & Screen Ltd.", workOrder: "47749", deliveryAddress: "321-16th Avenue NW, T2M 0H9", siteContact: null, sitePhone: null },
+            { value: "47754", text: "45HP Caps DQ#34388 - CP Distributors Ltd. (WO: 47754)", projectName: "45HP Caps DQ#34388", projectAddress: "CP Distributors Ltd.", workOrder: "47754", deliveryAddress: "120-4550 25th Street Calgary, Alberta T2B 3P1", siteContact: null, sitePhone: null },
+            { value: "47643", text: "Accurate - Economy Glass (WO: 47643)", projectName: "Accurate", projectAddress: "Economy Glass", workOrder: "47643", deliveryAddress: "101-17th Avenue SW Calgary T2S OA1", siteContact: "Cris", sitePhone: null }, // WO also used by Insta-Source
+            { value: "47684", text: "Alberta Health - Chinook Glass (WO: 47684)", projectName: "Alberta Health", projectAddress: "Chinook Glass", workOrder: "47684", deliveryAddress: "Calgary Alberta", siteContact: null, sitePhone: null },
+            { value: "47765", text: "All Kind Glass DQ#34420 - Miscellaneous -Supply Only (WO: 47765)", projectName: "All Kind Glass DQ#34420", projectAddress: "Miscellaneous -Supply Only", workOrder: "47765", deliveryAddress: null, siteContact: null, sitePhone: null },
+            { value: "47663", text: "Aluminum Panel - Diamond Glass (WO: 47663)", projectName: "Aluminum Panel", projectAddress: "Diamond Glass", workOrder: "47663", deliveryAddress: "805 Main St S #2, Airdrie, AB T4B 3M1", siteContact: "James", sitePhone: "780-984-5413" },
+            { value: "47112", text: "AMUFL - Cana Construction (WO: 47112)", projectName: "AMUFL", projectAddress: "Cana Construction", workOrder: "47112", deliveryAddress: null, siteContact: null, sitePhone: null },
+             { value: "N/A-AntiRolls", text: "Anti Rolls Beige - N/A", projectName: "Anti Rolls Beige", projectAddress: null, workOrder: null, deliveryAddress: null, siteContact: null, sitePhone: null }, // No WO
+            { value: "47316", text: "Blood Tribe Recovery Communi - Synergy Builds (WO: 47316)", projectName: "Blood Tribe Recovery Communi", projectAddress: "Synergy Builds", workOrder: "47316", deliveryAddress: "1 Ave W and 1 Ave, Cardston, AB", siteContact: "Chris Hall", sitePhone: "587-897-4277" },
+            { value: "45834", text: "Burnaby Hospital - Thermal System (WO: 45834)", projectName: "Burnaby Hospital", projectAddress: "Thermal System", workOrder: "45834", deliveryAddress: "3395 KINCAID STREET, BURNABY, BC V5G 2X6", siteContact: "Alex Babkov", sitePhone: "403-483-0043" }, // Adjusted postcode based on context
+            { value: "46870", text: "Calgary Go Auto & RV - Synergy Builds (WO: 46870)", projectName: "Calgary Go Auto & RV", projectAddress: "Synergy Builds", workOrder: "46870", deliveryAddress: "2505 Country Hills Boulevard NE", siteContact: "Brady", sitePhone: "587-335-8593" },
+            { value: "47690", text: "Capital City - Capital City (WO: 47690)", projectName: "Capital City", projectAddress: "Capital City", workOrder: "47690", deliveryAddress: "10735 184 Street NW Edmonton, Alberta T5S 2W6", siteContact: "Ace Courier", sitePhone: null }, // Assumed postcode
+            { value: "47662", text: "Carpi 45HP DQ#34034 Hepting - Miscellaneous-Supply Only (WO: 47662)", projectName: "Carpi 45HP DQ#34034 Hepting", projectAddress: "Miscellaneous-Supply Only", workOrder: "47662", deliveryAddress: "1145 F Rose ST, Regina SK", siteContact: "Hepting Glass", sitePhone: "306-775-1770" },
+            { value: "47716", text: "Castaways DQ#34206 - South Hill Windoews & Awning Ltd (WO: 47716)", projectName: "Castaways DQ#34206", projectAddress: "South Hill Windoews & Awning Ltd", workOrder: "47716", deliveryAddress: "100,153 Clearmile Avenue Red Deer, Alberta", siteContact: "Melissa J Bartherson", sitePhone: "403-347-9320" },
+            { value: "46317", text: "CC4 - Lark (WO: 46317)", projectName: "CC4", projectAddress: "Lark", workOrder: "46317", deliveryAddress: "3851 23NE Calgary, AB T2E6T2", siteContact: "Morgan Janzen", sitePhone: "403-629-9244" }, // WO shared by multiple projects
+            { value: "47075", text: "CCCBL - CANA Construction (WO: 47075)", projectName: "CCCBL", projectAddress: "CANA Construction", workOrder: "47075", deliveryAddress: "6088 University Boulevard, Vancouver BC", siteContact: "Alex", sitePhone: "403-483-0043" },
+            { value: "47666", text: "Cellar Room - Holbie's Glass Ltd. (WO: 47666)", projectName: "Cellar Room", projectAddress: "Holbie's Glass Ltd.", workOrder: "47666", deliveryAddress: "Box 8, Killam Alberta, TOB2L0", siteContact: "Darrin Holbie", sitePhone: "7803853664" },
+            { value: "46998", text: "Chinook Feeders - Westco Construction (WO: 46998)", projectName: "Chinook Feeders", projectAddress: "Westco Construction", workOrder: "46998", deliveryAddress: "near the corner of Township Road 172 and Range Road 272 Foothills County, Alberta", siteContact: "Cris Hall", sitePhone: "587-897-4277" }, // WO 46317 also listed? Using 46998 from OCR row.
+            { value: "46317-CityCentre", text: "City Centre - Lark (WO: 46317)", projectName: "City Centre", projectAddress: "Lark", workOrder: "46317", deliveryAddress: "9686 137 Street, Surrey, BC", siteContact: "Seth Gowda, Jordan Fuger", sitePhone: "236-268-4474, 204-881-3231" }, // Reusing 46317, added suffix
+            { value: "47508", text: "Imperial Group - Wii Projects (WO: 47508)", projectName: "Imperial Group", projectAddress: "Wii Projects", workOrder: "47508", deliveryAddress: "3808 - 7 Street SE, Calgary", siteContact: "Kurtis", sitePhone: "403-483-3593" },
+            { value: "47103", text: "Currie Barracks Bldg. 2 - Rohit Group (WO: 47103)", projectName: "Currie Barracks Bldg. 2", projectAddress: "Rohit Group", workOrder: "47103", deliveryAddress: "330 Dieppe Drive SW, Calgary, AB", siteContact: "Sergii Petr", sitePhone: "587-700-6741 / 587-966-4682" },
+            { value: "47691", text: "Dairy Queen Memorial Dr.NE D - Chinook Glass & Screen Ltd. (WO: 47691)", projectName: "Dairy Queen Memorial Dr.NE D", projectAddress: "Chinook Glass & Screen Ltd.", workOrder: "47691", deliveryAddress: "321-16 th Avenue NW Calgary Alberta T2M 0H9", siteContact: null, sitePhone: null }, // Assuming same Chinook address
+            { value: "47658", text: "Element Hotel - Archicon (WO: 47658)", projectName: "Element Hotel", projectAddress: "Archicon", workOrder: "47658", deliveryAddress: "833 4th Ave. SW, Calgary, AB", siteContact: "Kurtis", sitePhone: "403-483-3593" },
+            { value: "47584", text: "Element Hotel – Skip Hoist Repl - Archicon (WO: 47584)", projectName: "Element Hotel – Skip Hoist Repl", projectAddress: "Archicon", workOrder: "47584", deliveryAddress: "833 4th Ave. SW, Calgary AB", siteContact: "Xavier", sitePhone: "403.542.2155" },
+            { value: "46781", text: "EV606 Podium - Q Construction (WO: 46781)", projectName: "EV606 Podium", projectAddress: "Q Construction", workOrder: "46781", deliveryAddress: "606 Confluence Way SE Calgary, AB", siteContact: "Jordan", sitePhone: "403-891-6878" },
+            { value: "47054", text: "Feyter STS Forma Steel - Westco Construction (WO: 47054)", projectName: "Feyter STS Forma Steel", projectAddress: "Westco Construction", workOrder: "47054", deliveryAddress: "20 Barracks Trail, Fort Macleod, AB", siteContact: "Cris", sitePhone: "587-897-4277" },
+            { value: "47513", text: "Glasier Redge - Ledcor (WO: 47513)", projectName: "Glasier Redge", projectAddress: "Ledcor", workOrder: "47513", deliveryAddress: "146 Edith Drive NW, Calgary", siteContact: "Jim", sitePhone: "403-510-2880" },
+            { value: "47472", text: "Glenmore Temple - Carlson (WO: 47472)", projectName: "Glenmore Temple", projectAddress: "Carlson", workOrder: "47472", deliveryAddress: "68 Ave DW #921 Calgary T2V ON7", siteContact: null, sitePhone: null },
+            { value: "47274", text: "Greystone Coop - CANA Construction (WO: 47274)", projectName: "Greystone Coop", projectAddress: "CANA Construction", workOrder: "47274", deliveryAddress: "264 Park Street Cochrane, Alberta", siteContact: "Roberto", sitePhone: "403-973-1987" },
+            { value: "47688", text: "Griffin Glass - Griffin Glass (WO: 47688)", projectName: "Griffin Glass", projectAddress: "Griffin Glass", workOrder: "47688", deliveryAddress: "1307 Hasting Crescent SE, T2G 4C8", siteContact: "Dave", sitePhone: null },
+            { value: "N/A-Hampton", text: "Hampton Inn - N/A", projectName: "Hampton Inn", projectAddress: null, workOrder: null, deliveryAddress: "Calgary, AB", siteContact: "Andy", sitePhone: null }, // No WO
+            { value: "47685", text: "Independent Glass Contracting - Independent Glass Contracting (WO: 47685)", projectName: "Independent Glass Contracting", projectAddress: "Independent Glass Contracting", workOrder: "47685", deliveryAddress: "109 Cheecham Crt Anzac, AB TOP1JO, Canad", siteContact: "Chad Rithcie", sitePhone: "780-334-1060" },
+            { value: "47657", text: "Insight Glazing - Insight Glazing (WO: 47657)", projectName: "Insight Glazing", projectAddress: "Insight Glazing", workOrder: "47657", deliveryAddress: "101-17th Avenue SW Calgary T2S 0A1", siteContact: "Cris", sitePhone: null }, // Same addr as Accurate?
+            { value: "47700", text: "Insta-Source DQ#34033 - Economy Glass (WO: 47700)", projectName: "Insta-Source DQ#34033", projectAddress: "Economy Glass", workOrder: "47700", deliveryAddress: "701-30th Street NE, Calgary Alberta T2A 5L7", siteContact: null, sitePhone: null },
+             { value: "46317-JIT-NE", text: "JIT North East - JIT (WO: 46317)", projectName: "JIT North East", projectAddress: "JIT", workOrder: "46317", deliveryAddress: "7815 46St. SE", siteContact: null, sitePhone: null }, // Shared WO
+            { value: "47119", text: "JIT South East - JIT (WO: 47119)", projectName: "JIT South East", projectAddress: "JIT", workOrder: "47119", deliveryAddress: "#1 220 Avro Lane", siteContact: "Jim", sitePhone: "403-880-8392" }, // Shared WO with Mercury Block II
+            { value: "47744", text: "JS Aircraft Hanger - Jim Sibthorpe (WO: 47744)", projectName: "JS Aircraft Hanger", projectAddress: "Jim Sibthorpe", workOrder: "47744", deliveryAddress: "114-25 Belich Crescent Red Deer Counrty, Al", siteContact: "Kevin Taylor", sitePhone: "403-597-5374" },
+            { value: "47738", text: "Kikinow Door Adapror Cap - Central Alberta Windowa (WO: 47738)", projectName: "Kikinow Door Adapror Cap", projectAddress: "Central Alberta Windowa", workOrder: "47738", deliveryAddress: "10729-101 Street NW, Edmonton", siteContact: "Amber", sitePhone: "780-2985325" },
+            { value: "46917", text: "King's Thunderbird - Chandos (WO: 46917)", projectName: "King's Thunderbird", projectAddress: "Chandos", workOrder: "46917", deliveryAddress: "114-25 Belich Crescent Red Deer Counrty, Al", siteContact: "Kevin Taylor", sitePhone: "403-597-5374" },
+            { value: "47743", text: "Kodiak Astragal - Central Alberta Windowa (WO: 47743)", projectName: "Kodiak Astragal", projectAddress: "Central Alberta Windowa", workOrder: "47743", deliveryAddress: "114-25 Belich Crescent Red Deer Counrty, Al", siteContact: "Kevin Taylor", sitePhone: "403-597-5374" },
+            { value: "47648", text: "Kodiak DQ#33998 - Central Alberta Windowa (WO: 47648)", projectName: "Kodiak DQ#33998", projectAddress: "Central Alberta Windowa", workOrder: "47648", deliveryAddress: "114-25 Belich Crescent Red Deer Counrty, Alberta T4S 2K5", siteContact: null, sitePhone: null },
+            { value: "47752", text: "Kodiak DQ34395 - Central Alberta Windowa (WO: 47752)", projectName: "Kodiak DQ34395", projectAddress: "Central Alberta Windowa", workOrder: "47752", deliveryAddress: "Unit 14, 2305-52nd Avenue SE", siteContact: "Mathew", sitePhone: "'403-244-3283" },
+            { value: "47682", text: "Lemon Garden Aluminium DQ#3 - Bennett Glass (WO: 47682)", projectName: "Lemon Garden Aluminium DQ#3", projectAddress: "Bennett Glass", workOrder: "47682", deliveryAddress: "8188 & 8250 Manitoba Street, Vancouver", siteContact: "Alex", sitePhone: "403-483-0043" },
+            { value: "45615", text: "Marine Landing - Ventana (WO: 45615)", projectName: "Marine Landing", projectAddress: "Ventana", workOrder: "45615", deliveryAddress: "6088 University Boulevard, Vancouver BC", siteContact: "Alex", sitePhone: "403-483-0043" }, // See also specific lines for this WO
+            { value: "45615-MarineLanding", text: "Marine Landing (Detail) - Ventana (WO: 45615)", projectName: "Marine Landing", projectAddress: "Ventana", workOrder: "45615", deliveryAddress: "6088 University Boulevard, Vancouver BC", siteContact: "Alex", sitePhone: "403-483-0043" },
+            { value: "45834-Burnaby", text: "Marine Landing Burnaby - Thermal Systems (WO: 45834)", projectName: "Marine Landing Burnaby", projectAddress: "Thermal Systems", workOrder: "45834", deliveryAddress: "3395 KINCAID STREET, BURNABY, BC V5G 2X6", siteContact: "Alex Babkov", sitePhone: "403-483-0043" }, // Assumed same details as Burnaby Hosp
+            { value: "46317-CC4", text: "Marine Landing CC4 - Lark (WO: 46317)", projectName: "Marine Landing CC4", projectAddress: "Lark", workOrder: "46317", deliveryAddress: "3851 23NE Calgary, AB T2E6T2", siteContact: "Morgan Janzen", sitePhone: "403-629-9244" }, // Assumed same details as CC4
+            { value: "47611", text: "Mary Brow's-Tim Hortons DQ#3 - Central Alberta Windowa (WO: 47611)", projectName: "Mary Brow's-Tim Hortons DQ#3", projectAddress: "Central Alberta Windowa", workOrder: "47611", deliveryAddress: "114-25 Belich Crescent Red Deer Counrty, Al", siteContact: "Kevin Taylor", sitePhone: "403-597-5374" },
+            { value: "47705", text: "Mayfair Place DQ#34186 - All Kind Door Services Ltd. (WO: 47705)", projectName: "Mayfair Place DQ#34186", projectAddress: "All Kind Door Services Ltd.", workOrder: "47705", deliveryAddress: "1455-34th Avenue SE Calgary, Alberta T2G 4", siteContact: "Doug Watson", sitePhone: "403-266-1411" },
+            { value: "47077", text: "Meadow Vista Bldg. 3000 - Brad Remington (WO: 47077)", projectName: "Meadow Vista Bldg. 3000", projectAddress: "Brad Remington", workOrder: "47077", deliveryAddress: "Calgary, AB T2X 4K9", siteContact: "Jaden", sitePhone: null },
+            { value: "47119-Mercury", text: "Mercury Block II - Cana Construction (WO: 47119)", projectName: "Mercury Block II", projectAddress: "Cana Construction", workOrder: "47119", deliveryAddress: "10146-123 STREET NW, EDMONTON, ALBER", siteContact: "Leigh Puder", sitePhone: "780-667-9291" }, // Shared WO
+            { value: "47732", text: "Miscellaneous - Supply Only - DNO Glass (WO: 47732)", projectName: "Miscellaneous - Supply Only", projectAddress: "DNO Glass", workOrder: "47732", deliveryAddress: "Calgary Alberta", siteContact: null, sitePhone: null },
+            { value: "47727", text: "Miscellaneous Supply Only - Independent Glass Contracting (WO: 47727)", projectName: "Miscellaneous Supply Only", projectAddress: "Independent Glass Contracting", workOrder: "47727", deliveryAddress: "Calgary, alberta", siteContact: "Derik", sitePhone: null },
+            { value: "47358", text: "Myne BLDG 1000 - Truman Homes (WO: 47358)", projectName: "Myne BLDG 1000", projectAddress: "Truman Homes", workOrder: "47358", deliveryAddress: "#1000, 63 CORNER GLEN CR NE LOT 1 BLOC", siteContact: "Kurtis", sitePhone: "403-483-3593" },
+            { value: "47601", text: "NAPEG - Diamond Glass (WO: 47601)", projectName: "NAPEG", projectAddress: "Diamond Glass", workOrder: "47601", deliveryAddress: "PO Box 1645, 329 Old Airport Road", siteContact: "Bryan Rendell", sitePhone: "867-873-9178" },
+            { value: "47672", text: "New Shop Windows - Chinook Glass (WO: 47672)", projectName: "New Shop Windows", projectAddress: "Chinook Glass", workOrder: "47672", deliveryAddress: "321-16th Avenue NW, T2M 0H9", siteContact: "Lorry Roy", sitePhone: null },
+            { value: "47709", text: "Noble Ground DQ#33871 - Chinook Glass & Screen Ltd. (WO: 47709)", projectName: "Noble Ground DQ#33871", projectAddress: "Chinook Glass & Screen Ltd.", workOrder: "47709", deliveryAddress: "321-16th Avenue NW Calgary, Alberta T2M", siteContact: "Lorry Roy", sitePhone: null },
+            { value: "47623", text: "Noble Grounds Down Town - Chinook Glass (WO: 47623)", projectName: "Noble Grounds Down Town", projectAddress: "Chinook Glass", workOrder: "47623", deliveryAddress: "321-16th Avenue NW, T2M 0H9", siteContact: "Ken Smith", sitePhone: null },
+            { value: "46918", text: "Pacific Reach - Q Construction (WO: 46918)", projectName: "Pacific Reach", projectAddress: "Q Construction", workOrder: "46918", deliveryAddress: "521 3 Ave SW, Calgary, AB T2P 3T3", siteContact: "Mike Legal", sitePhone: "403-481-6412" },
+            { value: "4677", text: "Paul Davis- Sims Olds - South Hill Windows (WO: 4677)", projectName: "Paul Davis- Sims Olds", projectAddress: "South Hill Windows", workOrder: "4677", deliveryAddress: "100, 153 Clearmile Avenue Red Deer County", siteContact: "Dave", sitePhone: null }, // Pg 7
+            { value: "NA-Peak", text: "Peak Landmark LTD - Peak Landmark LTD (WO: NA)", projectName: "Peak Landmark LTD", projectAddress: "Peak Landmark LTD", workOrder: "NA", deliveryAddress: "4436-90TH AVE SE, CALGARY, AB T2C 2S7", siteContact: "Leo", sitePhone: "587-893-6464" },
+            { value: "47578", text: "Place 800 - Desa Install (WO: 47578)", projectName: "Place 800", projectAddress: "Desa Install", workOrder: "47578", deliveryAddress: "800 6 Ave SW, Calgary, AB T2P 3G3", siteContact: "Tom", sitePhone: null },
+            { value: "47369", text: "Podium Bldg. F - Deveraux (WO: 47369)", projectName: "Podium Bldg. F", projectAddress: "Deveraux", workOrder: "47369", deliveryAddress: "8620 CANADA OLYMPIC DRIVE SW", siteContact: "James", sitePhone: "780-984-5413" },
+            { value: "47536", text: "Port o Call Phase 1 & 2 - South Hill Windows (WO: 47536)", projectName: "Port o Call Phase 1 & 2", projectAddress: "South Hill Windows", workOrder: "47536", deliveryAddress: "100, 153 Clearmile Avenue Red Deer County", siteContact: "Dave", sitePhone: null }, // Assumed same address as Paul Davis
+            { value: "47670", text: "Precision Builders - Chinook Glass (WO: 47670)", projectName: "Precision Builders", projectAddress: "Chinook Glass", workOrder: "47670", deliveryAddress: "321-16th Avenue NW, T2M 0H9", siteContact: "Ken Smith", sitePhone: null }, // Assumed Chinook Address
+            { value: "NA-Rimac", text: "Rimac Fabricators Ltd - Rimac Fabricators Ltd (WO: NA)", projectName: "Rimac Fabricators Ltd", projectAddress: "Rimac Fabricators Ltd", workOrder: null, deliveryAddress: "265 Applewood Crescent, Concord Ontario,", siteContact: "Nick Theodoropolous", sitePhone: "905-669-6963 ext. 102" },
+            { value: "46954", text: "Royal BC Museum - Maple Reinders (WO: 46954)", projectName: "Royal BC Museum", projectAddress: "Maple Reinders", workOrder: "46954", deliveryAddress: "3608 Ryder Hesjedal Way Coldwood, BC V9", siteContact: "Alex", sitePhone: "403-483-0043" },
+            { value: "47368", text: "Sage Hill Estates - Spray Group (WO: 47368)", projectName: "Sage Hill Estates", projectAddress: "Spray Group", workOrder: "47368", deliveryAddress: "30 Sage Hill Row NW, Calgary", siteContact: "Adam/Jordan", sitePhone: "403-408-9277/403-805-3925" },
+            { value: "47342", text: "Save on Food - Laurin Group (WO: 47342)", projectName: "Save on Food", projectAddress: "Laurin Group", workOrder: "47342", deliveryAddress: "NA'A Drive SW, Calgary AB T2E 7G9", siteContact: "Kurtis", sitePhone: "403.483.3593" },
+            { value: "47026", text: "Seton Market - Ledcor (WO: 47026)", projectName: "Seton Market", projectAddress: "Ledcor", workOrder: "47026", deliveryAddress: "3815 Front St SE #125 Calgary.", siteContact: "Brendan Mark", sitePhone: "403-827-5628 / 403-466-1817" },
+            { value: "47641", text: "Slider Door - Griffin Glass (WO: 47641)", projectName: "Slider Door", projectAddress: "Griffin Glass", workOrder: "47641", deliveryAddress: "1307 Hasting Crescent SE, T2G 4C8", siteContact: "Dave", sitePhone: null }, // Assumed Griffin address
+            { value: "47659", text: "South Hill (47659,...) - South Hill Windows (WO: 47659)", projectName: "South Hill (Multiple WOs)", projectAddress: "South Hill Windows", workOrder: "47659, 47725, 47724, 47726, 47729", deliveryAddress: "100, 153 Clearmile Avenue Red Deer County", siteContact: "Dave", sitePhone: null }, // Combined multi-WO entry
+            { value: "47587", text: "St. Mary Church - South Hill Windows (WO: 47587)", projectName: "St. Mary Church", projectAddress: "South Hill Windows", workOrder: "47587", deliveryAddress: "100, 153 Clearmile Avenue Red Deer County", siteContact: "Dave", sitePhone: null },
+            { value: "47597", text: "St. Mary's Church DG#33860 - South Hill Windoews & Awning Ltd. (WO: 47597)", projectName: "St. Mary's Church DG#33860", projectAddress: "South Hill Windoews & Awning Ltd.", workOrder: "47597", deliveryAddress: "114-25 Belich Crescent Red Deer Counrty, Alberta T4S 2K5", siteContact: null, sitePhone: null }, // Assumed address based on other South Hill Awning
+            { value: "47681", text: "State & Main DQ#34043 - Central Alberta Windowa (WO: 47681)", projectName: "State & Main DQ#34043", projectAddress: "Central Alberta Windowa", workOrder: "47681", deliveryAddress: "1455-34th Avenue SE Calgary, Alberta T", siteContact: "Doug Watson", sitePhone: "403-266-1411" }, // Matched based on Doug Watson
+            { value: "47764", text: "Stock 12\" Pull Handle - All Kind Door Services Ltd. (WO: 47764)", projectName: "Stock 12\" Pull Handle", projectAddress: "All Kind Door Services Ltd.", workOrder: "47764", deliveryAddress: "860 Rutherford Road Maple, Ontario L6A 1", siteContact: "Nadia", sitePhone: "(289) 276-6077" },
+            { value: "47730", text: "Stock DQ#34323 - Abtek Door Services Ltd. (WO: 47730)", projectName: "Stock DQ#34323", projectAddress: "Abtek Door Services Ltd.", workOrder: "47730", deliveryAddress: "100,153 Clearmile Avenue Red Deer, Alberta", siteContact: "Melissa J Bartherson", sitePhone: "403-347-9320" },
+            { value: "47741", text: "Stock Handles & Covers - South Hill Windows & Awning Ltd. (WO: 47741)", projectName: "Stock Handles & 3 3/4 Cover Ca", projectAddress: "South Hill Windows & Awning Ltd.", workOrder: "47741", deliveryAddress: "100,153 Clearmile Avenue Red Deer, Alberta", siteContact: "Melissa J Bartherson", sitePhone: "403-347-9320" }, // Combined handle entries
+            { value: "47718", text: "Stock Hardware - Griffin Glass (WO: 47718)", projectName: "Stock Hardware", projectAddress: "Griffin Glass", workOrder: "47718", deliveryAddress: "1307 Hasting Crescent SE, T2G 4C8", siteContact: "Matt", sitePhone: null }, // Assumed Griffin addr
+            { value: "47736", text: "Stock Hardware DQ#34319 - CP Distributors Ltd. (WO: 47736)", projectName: "Stock Hardware DQ#34319", projectAddress: "CP Distributors Ltd.", workOrder: "47736", deliveryAddress: "120-4550 25th Street Calgary Alberta", siteContact: null, sitePhone: null }, // Assumed CP Dist addr
+            { value: "47751", text: "Stock Hardware DQ#34393 - Independent Glass Contracting (WO: 47751)", projectName: "Stock Hardware DQ#34393", projectAddress: "Independent Glass Contracting", workOrder: "47751", deliveryAddress: "Unit#2-701 30th Street NE Calgary AB T2A 6A3", siteContact: null, sitePhone: null },
+            { value: "47762", text: "Stock Hardware DQ#34417 - Capital Glass Brooks 2010 Ltd. (WO: 47762)", projectName: "Stock Hardware DQ#34417", projectAddress: "Capital Glass Brooks 2010 Ltd.", workOrder: "47762", deliveryAddress: "Box 1150, 824-2nd Street West Brooks, Albe", siteContact: "Corey Kristianson", sitePhone: "403-362-5531" },
+            { value: "47733", text: "Stock Material DQ#34325 - Bennett Glass (WO: 47733)", projectName: "Stock Material DQ#34325", projectAddress: "Bennett Glass", workOrder: "47733", deliveryAddress: "Unit 14, 2305-52nd Avenue SE", siteContact: "Mathew", sitePhone: "403-244-3283" },
+            { value: "47776", text: "Stock Material DQ#34459 - King's Glass Ltd. (WO: 47776)", projectName: "Stock Material DQ#34459", projectAddress: "King's Glass Ltd.", workOrder: "47776", deliveryAddress: "6320 Centre Street SE", siteContact: "Fred Denomme", sitePhone: "4032581798" },
+            { value: "47766", text: "Stock Steel Angle DQ#34427 - South Hill Windoews & Awning Ltd. (WO: 47766)", projectName: "Stock Steel Angle DQ#34427", projectAddress: "South Hill Windoews & Awning Ltd.", workOrder: "47766", deliveryAddress: "100, 153 Clearmile Avenue Red Deer County", siteContact: "Dave", sitePhone: null }, // Assumed South Hill addr
+            { value: "46999", text: "Teck Sparwood - Ellis Don (WO: 46999)", projectName: "Teck Sparwood", projectAddress: "Ellis Don", workOrder: "46999", deliveryAddress: "2202 Middletown Place Sparwood BC", siteContact: "Wyatt", sitePhone: "403-650-9789" },
+            { value: "47687", text: "Terrigno - South Hill Windows (WO: 47687)", projectName: "Terrigno", projectAddress: "South Hill Windows", workOrder: "47687", deliveryAddress: "321-16th Avenue NW, T2M 0H9", siteContact: "Ken Smith", sitePhone: null }, // Assumed South Hill addr
+            { value: "47723", text: "Thai Thai DQ#34266 - King's Glass Ltd. (WO: 47723)", projectName: "Thai Thai DQ#34266", projectAddress: "King's Glass Ltd.", workOrder: "47723", deliveryAddress: "6320 Centre Street SE", siteContact: "Fred Denomme", sitePhone: "4032581798" },
+            { value: "47340", text: "The Gateway 3 Sister - Cana Construction (WO: 47340)", projectName: "The Gateway 3 Sister", projectAddress: "Cana Construction", workOrder: "47340", deliveryAddress: "Cascade Drive, Canmore, AB", siteContact: "Jordan", sitePhone: "403-891-6878" },
+            { value: "47159", text: "The Loft - Maple Reinders (WO: 47159)", projectName: "The Loft", projectAddress: "Maple Reinders", workOrder: "47159", deliveryAddress: "744-4 Avenue SW Calgary, Alberta", siteContact: "Roberto", sitePhone: "403-973-1987" },
+            { value: "47734", text: "Tim Horton's 17th Ave DQ#3433 - King's Glass Ltd. (WO: 47734)", projectName: "Tim Horton's 17th Ave DQ#3433", projectAddress: "King's Glass Ltd.", workOrder: "47734", deliveryAddress: "6320 Centre Street SE", siteContact: "Fred Denomme", sitePhone: "4032581798" },
+            { value: "47712", text: "Trail Construction - Chinook Glass (WO: 47712)", projectName: "Trail Construction", projectAddress: "Chinook Glass", workOrder: "47712", deliveryAddress: "321-16th Avenue NW, T2M 0H9", siteContact: "Lorry Roy", sitePhone: null }, // Assumed Chinook Addr
+            { value: "47109", text: "Trinity Hills - Laurin Group (WO: 47109)", projectName: "Trinity Hills", projectAddress: "Laurin Group", workOrder: "47109", deliveryAddress: "924 Na'a Drive SW, Calgary, Alberta", siteContact: "Morgan Janzen", sitePhone: "403-629-9244" },
+            { value: "45621", text: "UBC-SBME - Ventana (WO: 45621)", projectName: "UBC-SBME", projectAddress: "Ventana", workOrder: "45621", deliveryAddress: "6088 University Boulevard, Vancouver, BC", siteContact: "Alex", sitePhone: "403-483-0043" },
+            { value: "47303", text: "USAY Youth Center - Synergy Builds (WO: 47303)", projectName: "USAY Youth Center", projectAddress: "Synergy Builds", workOrder: "47303", deliveryAddress: "1715 - 36 Street SE, Calgary", siteContact: "Jordan", sitePhone: "403-891-6878" }, // Page 4 / Page 8 Match
+            { value: "47290", text: "We Wai Kai - Ketza Pacific (WO: 47290)", projectName: "We Wai Kai", projectAddress: "Ketza Pacific", workOrder: "47290", deliveryAddress: "2025 Eagle Drive, Campbell River, BC V9H 1", siteContact: "Alex", sitePhone: "403-483-0043" }, // Page 4 / Page 8 Match
+            { value: "47703", text: "Westbrook DQ#34210 - GQM Services (WO: 47703)", projectName: "Westbrook DQ#34210", projectAddress: "GQM Services", workOrder: "47703", deliveryAddress: "228 Mt.Cornwall Mews SE Calgary, Alberta T2Z 2J8", siteContact: null, sitePhone: null }, // Page 4 / Page 8 Match
+            { value: "47566", text: "WSCC - Diamond Glass (WO: 47566)", projectName: "WSCC", projectAddress: "Diamond Glass", workOrder: "47566", deliveryAddress: "PO Box 1645, 329 Old Airport Road, Yellowk", siteContact: "Bryan Rendell", sitePhone: "867-873-9178" } // Page 4 / Page 8 Match
+
         ];
+        // === END NEW PROJECT DATA ===
+
 
         // --- DOM Elements ---
         const jobSelectionPage = document.getElementById('jobSelectionPage');
@@ -641,7 +751,12 @@
         const signatureCanvas = document.getElementById('signature-pad');
         const signatureErrorDiv = document.getElementById('signature-error');
         const saveStatusDiv = document.getElementById('save-status');
-        const projectNameInput = document.getElementById('project-name');
+        const projectNameInput = document.getElementById('project-name'); // Packing list field
+        const projectAddressInput = document.getElementById('project-address'); // Packing list field
+        const workOrderInput = document.getElementById('work-order'); // Packing list field
+        const consigneeAddressInput = document.getElementById('consignee-address'); // Packing list field
+        const siteContactInput = document.getElementById('site-contact'); // Packing list field
+        const sitePhoneInput = document.getElementById('site-phone'); // Packing list field
         const printTruckId = document.getElementById('printTruckId');
         const printProject = document.getElementById('printProject');
         const printTruckDimensions = document.getElementById('printTruckDimensions');
@@ -669,13 +784,14 @@
 
         function populateProjectSelectors() {
              mainProjectSelect.innerHTML = '<option value="" disabled selected>Select a Project...</option>';
-             PROJECT_OPTIONS.forEach(proj => {
+             // *** MODIFIED: Use PROJECT_DATA ***
+             PROJECT_DATA.forEach(proj => {
                  const option = document.createElement('option');
-                 option.value = proj.value;
-                 option.textContent = proj.text;
+                 option.value = proj.value; // Use the defined value (e.g., WO#)
+                 option.textContent = proj.text; // Use the defined display text
                  mainProjectSelect.appendChild(option);
              });
-             console.log("Main project selector populated.");
+             console.log("Main project selector populated from PROJECT_DATA.");
          }
 
         function initializeSelect2() {
@@ -737,7 +853,7 @@
              signatureCanvas.width = signatureCanvas.offsetWidth * ratio; signatureCanvas.height = signatureCanvas.offsetHeight * ratio;
              const ctx = signatureCanvas.getContext('2d'); ctx.scale(ratio, ratio);
              // Restore signature if it existed
-             if (signaturePad) { signaturePad.clear(); if (data && data !== 'data:,') { signaturePad.fromDataURL(data); } }
+             if (signaturePad) { signaturePad.clear(); if (data && data !== 'data:,') { try { signaturePad.fromDataURL(data); } catch(e){ console.error("Error restoring sig on resize",e); } } }
         }
         function debounce(func, wait){ let timeout; return function executedFunction(...args) { const later = () => { clearTimeout(timeout); func(...args); }; clearTimeout(timeout); timeout = setTimeout(later, wait); }; }
 
@@ -811,36 +927,51 @@
             navigateTo('projectSelectionPage');
          }
         function handleProjectSelectionProceed() {
-            const selectedProjectId = mainProjectSelect.value;
+            const selectedProjectId = mainProjectSelect.value; // This is the 'value' from PROJECT_DATA (e.g., WO#)
             const selectedJobType = appState._selectedJobType;
+
             if (!validateProjectSelection(mainProjectSelect, mainProjectSelectErrorDiv)) { return; }
             if (!selectedJobType) { console.error("Error: Job type (_selectedJobType) is missing."); alert("An error occurred. Please go back and select the task type again."); goBackToJobSelection(); return; }
+
             console.log(`Project ${selectedProjectId} selected for task ${selectedJobType}`);
+
             let nextPageId = '';
             if (selectedJobType === 'inventory') {
+                // Inventory selection logic remains the same, just using the new project ID
                 appState.inventory.selectedProject = selectedProjectId;
                  if (!appState.inventory.skids[selectedProjectId]) { appState.inventory.skids[selectedProjectId] = []; }
                  if (!appState.inventory.nextSkidId[selectedProjectId]) { appState.inventory.nextSkidId[selectedProjectId] = 1; }
                 nextPageId = 'inventoryPage';
             } else if (selectedJobType === 'truckEntry') {
-                // Only set truck project if it's different or wasn't set
+                // *** MODIFIED: Store the selected Project ID (value) in truckInfo ***
                 if (appState.truckLoad.truckInfo.project !== selectedProjectId) {
-                    // If changing project for an existing truck load, warn or clear skids?
-                    if (appState.truckLoad.skids.length > 0 && !confirm(`You have changed the project for this truck load. Do you want to keep the ${appState.truckLoad.skids.length} skids currently assigned, or clear them? \n\nOK = Keep Skids, Cancel = Clear Skids`)) {
+                    // Existing logic for handling project change warning
+                    const oldProjectText = PROJECT_DATA.find(p => p.value === appState.truckLoad.truckInfo.project)?.text || appState.truckLoad.truckInfo.project || 'None';
+                    const newProjectText = PROJECT_DATA.find(p => p.value === selectedProjectId)?.text || selectedProjectId;
+
+                    if (appState.truckLoad.skids.length > 0 && appState.truckLoad.truckInfo.project !== null && !confirm(`You have changed the project for this truck load from '${oldProjectText}' to '${newProjectText}'. Do you want to keep the ${appState.truckLoad.skids.length} skids currently assigned, or clear them? \n\nOK = Keep Skids, Cancel = Clear Skids`)) {
                         console.log("User opted to clear truck skids due to project change.");
                         appState.truckLoad.skids = [];
-                        // Reset inventory selection availability if we were on that page
                         if(appState.currentPage === 'skidDetailsPage') {
                            displayInventorySkidsForSelection(selectedProjectId); // Display for the *new* project
                         }
                     } else {
-                        console.log("User opted to keep existing truck skids despite project change.");
-                         // Skids from the OLD project remain, inventory selection will show NEW project items
+                        console.log("User opted to keep existing truck skids or it's the first selection.");
                     }
-                    appState.truckLoad.truckInfo.project = selectedProjectId; // Update project in state
+                    // *** Store the selected project's value (e.g., WO#) ***
+                    appState.truckLoad.truckInfo.project = selectedProjectId;
+                    console.log("Updated truck project ID to:", selectedProjectId);
+                    // Clear previous packing list data when project changes for truck load
+                    if (appState.truckLoad.packingList && Object.keys(appState.truckLoad.packingList).length > 0) {
+                        console.log("Clearing packing list data due to project change.");
+                        appState.truckLoad.packingList = {};
+                        if(signaturePad) signaturePad.clear();
+                        appState.truckLoad.signatureData = null;
+                    }
                 }
                 nextPageId = 'truckInfoPage';
             }
+
              appState._selectedJobType = null; // Clear the temporary selection
              if (nextPageId) { navigateTo(nextPageId); } else { console.error("Could not determine next page ID."); }
          }
@@ -854,11 +985,19 @@
             }
          }
         function handlePackingListInputChange(event) {
-             // Avoid auto-saving for the read-only project name
-             if (event.target.id !== 'project-name') { collectPackingListData(); saveState(); }
+             // Avoid auto-saving for the read-only project name, address, WO# fields
+             const autoFilledIds = ['project-name', 'project-address', 'work-order', 'consignee-address', 'site-contact', 'site-phone'];
+             if (!autoFilledIds.includes(event.target.id)) {
+                 collectPackingListData(); // Collects ALL data including auto-filled ones for consistency in state
+                 saveState();
+             } else {
+                // If user somehow edits a field intended for auto-fill, still collect it
+                 collectPackingListData();
+                 saveState();
+             }
          }
-        function handleManualSave() { collectPackingListData(); updatePackingListProjectName(); saveState(true); }
-        function handlePrintPackingList() { collectPackingListData(); updatePackingListProjectName(); updatePrintSection(); window.print(); }
+        function handleManualSave() { collectPackingListData(); saveState(true); } // Project name is handled by collect/populate
+        function handlePrintPackingList() { collectPackingListData(); updatePrintSection(); window.print(); } // Project name is handled by updatePrintSection
         function handleFormInputChange(inputElement) {
             // Also validate on input for truck form
             if (inputElement.form === truckInfoForm && !inputElement.checkValidity()) {
@@ -920,7 +1059,7 @@
         // --- State Management ---
         function saveState(showStatus = false) {
             if (signaturePad && !signaturePad.isEmpty()) { appState.truckLoad.signatureData = signaturePad.toDataURL(); } else { appState.truckLoad.signatureData = null; }
-            updatePackingListProjectName(); // Ensure project name is sync'd before save
+            // Packing list data is collected on input/manual save, no need to explicitly call collect here
             try {
                 localStorage.setItem(APP_STATE_KEY, JSON.stringify(appState));
                 if (showStatus) showSaveStatus("Progress saved successfully!");
@@ -998,42 +1137,41 @@
          }
         function updateDynamicContentForState() {
              const currentPage = appState.currentPage;
-             const inventoryProject = PROJECT_OPTIONS.find(p => p.value === appState.inventory.selectedProject);
-             const truckProject = PROJECT_OPTIONS.find(p => p.value === appState.truckLoad.truckInfo.project);
+             // *** MODIFIED: Find project details using the stored ID (value) ***
+             const inventoryProjectDetails = PROJECT_DATA.find(p => p.value === appState.inventory.selectedProject);
+             const truckProjectDetails = PROJECT_DATA.find(p => p.value === appState.truckLoad.truckInfo.project);
 
              // Update common elements or specific page elements
              if (currentPage === 'inventoryPage') {
-                 inventoryPageProjectNameSpan.textContent = inventoryProject ? inventoryProject.text : 'N/A';
-                 inventoryProjectDisplaySpan.textContent = inventoryProject ? inventoryProject.text : 'N/A';
-                 renderInventorySkidsTable(appState.inventory.selectedProject);
+                 const projText = inventoryProjectDetails ? inventoryProjectDetails.text : 'N/A';
+                 inventoryPageProjectNameSpan.textContent = projText;
+                 inventoryProjectDisplaySpan.textContent = projText;
+                 renderInventorySkidsTable(appState.inventory.selectedProject); // Pass the project ID (value)
                  showAddInventorySkidBtn.disabled = !appState.inventory.selectedProject;
-                 resetInventorySkidsBtn.disabled = !appState.inventory.selectedProject || (appState.inventory.skids[appState.inventory.selectedProject]?.length || 0) === 0; // Disable if no skids
+                 resetInventorySkidsBtn.disabled = !appState.inventory.selectedProject || (appState.inventory.skids[appState.inventory.selectedProject]?.length || 0) === 0;
              } else if (currentPage === 'truckInfoPage') {
-                 truckInfoPageProjectNameSpan.textContent = truckProject ? truckProject.text : 'N/A';
-                 truckProjectDisplaySpan.textContent = truckProject ? truckProject.text : 'N/A';
+                 const projText = truckProjectDetails ? truckProjectDetails.text : 'N/A';
+                 truckInfoPageProjectNameSpan.textContent = projText;
+                 truckProjectDisplaySpan.textContent = projText;
                   // Ensure truck form reflects current state (in case of back navigation)
                   document.getElementById('truckId').value = appState.truckLoad.truckInfo.id || '';
                   document.getElementById('length').value = appState.truckLoad.truckInfo.length || '';
                   document.getElementById('width').value = appState.truckLoad.truckInfo.width || '';
                   document.getElementById('weight').value = appState.truckLoad.truckInfo.weight || '';
              } else if (currentPage === 'skidDetailsPage') {
-                 updateSkidPageHeader();
-                 displayInventorySkidsForSelection(appState.truckLoad.truckInfo.project);
+                 updateSkidPageHeader(); // Will use truckProjectDetails logic inside
+                 displayInventorySkidsForSelection(appState.truckLoad.truckInfo.project); // Pass the project ID (value)
                  updateTruckSkidTable();
                  updateLoadingInstructions();
-                 // Ensure the add truck skid button exists and listener is attached (if navigated here directly)
-                  const addTruckSkidButton = document.getElementById('addTruckSkidBtn');
-                  if (addTruckSkidButton && !addTruckSkidButton.onclick) { // Basic check if listener might be missing
-                        addTruckSkidButton.addEventListener('click', () => showAddSkidForm('truck'));
-                  }
-                  // Disable reset button if no skids
-                  const resetSkidsBtn = document.getElementById('resetSkidsBtn');
-                  if(resetSkidsBtn) resetSkidsBtn.disabled = (appState.truckLoad.skids?.length || 0) === 0;
+                 // (Keep existing button checks)
+                 const resetSkidsBtn = document.getElementById('resetSkidsBtn');
+                 if(resetSkidsBtn) resetSkidsBtn.disabled = (appState.truckLoad.skids?.length || 0) === 0;
 
              } else if (currentPage === 'packingListPage') {
-                 populatePackingListForm(); // Populates from appState.truckLoad.packingList
-                 updatePackingListPageHeader();
-                 updatePrintSection(); // Prepare print data
+                 // *** populatePackingListForm now handles auto-fill ***
+                 populatePackingListForm();
+                 updatePackingListPageHeader(); // Uses truck ID
+                 updatePrintSection(); // Prepare print data based on state
                  resizeCanvas(); // Ensure signature pad is sized correctly
                  // Re-load signature if needed (might be redundant if loadState worked, but safe)
                  if (signaturePad && appState.truckLoad.signatureData) {
@@ -1079,19 +1217,27 @@
         function proceedToSkidDetails() { appState.truckLoad.truckInfo = { ...appState.truckLoad.truckInfo, id: document.getElementById('truckId').value.trim(), length: parseFloat(document.getElementById('length').value) || null, width: parseFloat(document.getElementById('width').value) || null, weight: parseFloat(document.getElementById('weight').value) || null }; navigateTo('skidDetailsPage'); }
         function goBackToSkidDetails() { collectPackingListData(); saveState(); navigateTo('skidDetailsPage'); }
         function proceedToPackingList() { collectPackingListData(); navigateTo('packingListPage'); } // Data collected before nav
-        function completePackingList() { collectPackingListData(); updatePackingListProjectName(); if (!validatePackingListForm()) return; saveState(true); alert(`Packing list for Truck ${appState.truckLoad.truckInfo.id} completed and saved.`); /* Optionally navigate away or reset */ }
+        function completePackingList() { collectPackingListData(); if (!validatePackingListForm()) return; saveState(true); alert(`Packing list for Truck ${appState.truckLoad.truckInfo.id} completed and saved.`); /* Optionally navigate away or reset */ }
 
         // --- UI Update Helpers ---
-        function updateSkidPageHeader() { truckIdentifierSpan.textContent = appState.truckLoad.truckInfo.id || 'N/A'; const project = PROJECT_OPTIONS.find(p => p.value === appState.truckLoad.truckInfo.project); skidDetailsProjectNameSpan.textContent = project ? project.text : (appState.truckLoad.truckInfo.project || 'N/A'); truckSizeDisplaySpan.textContent = `(${appState.truckLoad.truckInfo.length || '?'}ft L × ${appState.truckLoad.truckInfo.width || '?'}ft W, ${appState.truckLoad.truckInfo.weight || '?'}lbs Cap.)`; }
+        function updateSkidPageHeader() {
+            truckIdentifierSpan.textContent = appState.truckLoad.truckInfo.id || 'N/A';
+            // *** MODIFIED: Use PROJECT_DATA ***
+            const projectDetails = PROJECT_DATA.find(p => p.value === appState.truckLoad.truckInfo.project);
+            skidDetailsProjectNameSpan.textContent = projectDetails ? projectDetails.text : (appState.truckLoad.truckInfo.project || 'N/A');
+            truckSizeDisplaySpan.textContent = `(${appState.truckLoad.truckInfo.length || '?'}ft L × ${appState.truckLoad.truckInfo.width || '?'}ft W, ${appState.truckLoad.truckInfo.weight || '?'}lbs Cap.)`;
+        }
         function updatePackingListPageHeader() { packingListTruckIdSpan.textContent = appState.truckLoad.truckInfo.id || 'N/A'; }
-        function updatePackingListProjectName() { if (!projectNameInput) return; const selectedProjectValue = appState.truckLoad.truckInfo.project; let projectText = ''; if (selectedProjectValue) { const selectedOption = PROJECT_OPTIONS.find(p => p.value === selectedProjectValue); projectText = selectedOption ? selectedOption.text : selectedProjectValue; } projectNameInput.value = projectText; if (!appState.truckLoad.packingList) appState.truckLoad.packingList = {}; appState.truckLoad.packingList.projectName = projectText; /* Store the text version */ }
+
+        // updatePackingListProjectName() is no longer needed as populatePackingListForm handles this.
+
 
         // --- Skid Management (Inventory) ---
         function renderInventorySkidsTable(projectId) {
              inventorySkidTableBody.innerHTML = '';
              if (!projectId) { inventorySkidTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Select a project first.</td></tr>'; return; }
              const skids = appState.inventory.skids[projectId] || [];
-             if (skids.length === 0) { const projectText = PROJECT_OPTIONS.find(p => p.value === projectId)?.text || projectId; inventorySkidTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center;">No inventory skids found for project ${projectText}.</td></tr>`; return; }
+             if (skids.length === 0) { const projectText = PROJECT_DATA.find(p => p.value === projectId)?.text || projectId; inventorySkidTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center;">No inventory skids found for project ${projectText}.</td></tr>`; return; }
              skids.forEach((skid, index) => {
                  const row = inventorySkidTableBody.insertRow();
                  const displayId = skid.invId || `Error-No-ID-${index}`;
@@ -1116,7 +1262,7 @@
              if (!projectId || !appState.inventory.skids[projectId] || !appState.inventory.skids[projectId][index]) { console.error("Could not delete inventory skid: Invalid project or index."); return; }
              const skidToDelete = appState.inventory.skids[projectId][index];
              const displayId = skidToDelete.invId || `INV-${projectId}-temp-${index + 1}`;
-             const projectText = PROJECT_OPTIONS.find(p => p.value === projectId)?.text || projectId;
+             const projectText = PROJECT_DATA.find(p => p.value === projectId)?.text || projectId;
              if (confirm(`Are you sure you want to permanently delete Inventory Skid ${displayId} for project ${projectText}? This cannot be undone.`)) {
                  // Store the ID before deleting
                  const deletedInvId = skidToDelete.invId;
@@ -1160,7 +1306,7 @@
              const projectId = appState.inventory.selectedProject;
              if (!projectId) { alert("Please select a project first."); return; }
              const skids = appState.inventory.skids[projectId] || [];
-             const projectText = PROJECT_OPTIONS.find(p => p.value === projectId)?.text || projectId;
+             const projectText = PROJECT_DATA.find(p => p.value === projectId)?.text || projectId;
              if (skids.length === 0) { alert(`Inventory for project ${projectText} is already empty.`); return; }
              if (confirm(`ARE YOU SURE you want to REMOVE ALL ${skids.length} inventory skids listed for project ${projectText}? This will reset the ID counter and cannot be undone.`)) {
                  console.log(`Resetting inventory skids for project ${projectId}...`);
@@ -1669,31 +1815,71 @@
             if (!appState.truckLoad.packingList) appState.truckLoad.packingList = {};
             const formData = new FormData(packingListForm);
             for (const [key, value] of formData.entries()) {
-                // Don't overwrite the auto-filled project name from form data
-                if (key !== 'projectName') {
-                    appState.truckLoad.packingList[key] = value;
-                }
+                // Store all user-editable fields' current values from the form
+                 appState.truckLoad.packingList[key] = value;
             }
-            updatePackingListProjectName(); // Ensure the stored project name is correct based on state
+            // Note: The project-related fields (name, address, WO, consigneeAddr, contact, phone)
+            // will be overwritten here if the user somehow edited them, but populatePackingListForm
+            // will correct them based on PROJECT_DATA when the page is next rendered/updated.
         }
+
+        // *** MODIFIED: populatePackingListForm to Auto-fill ***
         function populatePackingListForm() {
-             // Reset form before populating to clear stale values
+             // 1. Reset form first (optional, but good practice)
              if (packingListForm) packingListForm.reset();
 
-             for (const [key, value] of Object.entries(appState.truckLoad.packingList || {})) {
+             // 2. Find Project Details based on the stored project ID
+             const currentProjectId = appState.truckLoad.truckInfo.project;
+             const projectDetails = currentProjectId ? PROJECT_DATA.find(p => p.value === currentProjectId) : null;
+
+             // 3. Auto-fill from Project Details if found
+             let autoFilledValues = {}; // Keep track of what we auto-filled
+             if (projectDetails) {
+                 console.log("Auto-filling packing list from PROJECT_DATA for:", currentProjectId);
+                 if(projectNameInput) { projectNameInput.value = projectDetails.text || projectDetails.projectName || ''; autoFilledValues['projectName'] = projectNameInput.value; }
+                 if(projectAddressInput) { projectAddressInput.value = projectDetails.projectAddress || ''; autoFilledValues['projectAddress'] = projectAddressInput.value; }
+                 if(workOrderInput) { workOrderInput.value = projectDetails.workOrder || projectDetails.value || ''; autoFilledValues['workOrder'] = workOrderInput.value; }
+                 // Use Delivery Address for Consignee, fallback to Project Address
+                 if(consigneeAddressInput) { consigneeAddressInput.value = projectDetails.deliveryAddress || projectDetails.projectAddress || ''; autoFilledValues['consigneeAddress'] = consigneeAddressInput.value; }
+                 if(siteContactInput) { siteContactInput.value = projectDetails.siteContact || ''; autoFilledValues['siteContact'] = siteContactInput.value; }
+                 if(sitePhoneInput) { sitePhoneInput.value = projectDetails.sitePhone || ''; autoFilledValues['sitePhone'] = sitePhoneInput.value; }
+             } else {
+                 console.log("No project selected for truck load, skipping auto-fill.");
+                 // Clear fields that would normally be auto-filled
+                 if(projectNameInput) projectNameInput.value = '';
+                 if(projectAddressInput) projectAddressInput.value = '';
+                 if(workOrderInput) workOrderInput.value = '';
+                 if(consigneeAddressInput) consigneeAddressInput.value = '';
+                 if(siteContactInput) siteContactInput.value = '';
+                 if(sitePhoneInput) sitePhoneInput.value = '';
+             }
+
+             // 4. Overlay with saved user input from appState.truckLoad.packingList
+             // Only apply saved data for fields *not* auto-filled in this round,
+             // or for fields where the saved data is different (allowing overrides of non-project fields)
+             const savedPackingList = appState.truckLoad.packingList || {};
+             for (const [key, value] of Object.entries(savedPackingList)) {
                  const input = packingListForm.querySelector(`[name="${key}"]`);
-                 // Exclude project name as it's handled separately
-                 if (input && key !== 'projectName') {
-                     input.value = value || '';
+                 if (input) {
+                     // Apply saved value ONLY if:
+                     // 1. The field was NOT auto-filled OR
+                     // 2. The saved value is different from the auto-filled one (for non-project-ID fields)
+                     if (!(key in autoFilledValues) || (key in autoFilledValues && value !== autoFilledValues[key] && !['projectName', 'projectAddress', 'workOrder', 'consigneeAddress', 'siteContact', 'sitePhone'].includes(key) )) {
+                         input.value = value || ''; // Use saved value
+                         // console.log(`Populating field ${key} from saved state: ${value}`);
+                     } else if (key in autoFilledValues) {
+                        // console.log(`Field ${key} was auto-filled, keeping auto-filled value: ${autoFilledValues[key]}`);
+                     }
                  }
              }
-             updatePackingListProjectName(); // Set the read-only project name field
+
              // Clear validation states when populating
              packingListForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
              packingListForm.querySelectorAll('.invalid-feedback').forEach(el => el.style.display = 'none');
              if(signatureErrorDiv) signatureErrorDiv.style.display = 'none';
              if(signatureCanvas) signatureCanvas.parentElement.style.border = '2px dashed var(--medium-gray)';
          }
+
         function clearSignature() {
              if (signaturePad) {
                  signaturePad.clear();
@@ -1705,16 +1891,21 @@
         }
         function handleResetPackingList() {
             if (confirm('Are you sure you want to reset the Packing List form? This will clear all fields and the signature.')) {
+                 // Clear the form fields
                  if (packingListForm) packingListForm.reset();
-                 clearSignature();
-                 appState.truckLoad.packingList = {}; // Clear data in state
-                 updatePackingListProjectName(); // Reset project name display
-                 // Clear validation states
+                 // Clear signature visually and in state
+                 clearSignature(); // Also saves state
+                 // Clear packing list data in state
+                 appState.truckLoad.packingList = {};
+                 // Re-populate with auto-filled data based on the *current* project
+                 populatePackingListForm(); // This will apply project defaults if a project is selected
+                 // Clear validation states again just in case
                  packingListForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
                  packingListForm.querySelectorAll('.invalid-feedback').forEach(el => el.style.display = 'none');
                  if(signatureErrorDiv) signatureErrorDiv.style.display = 'none';
                  if(signatureCanvas) signatureCanvas.parentElement.style.border = '2px dashed var(--medium-gray)';
-                 saveState(); // Save the reset state
+
+                 saveState(); // Save the reset state (with potential auto-fill)
                  alert("Packing List form has been reset.");
                  // Update reset button state
                  const resetBtn = document.getElementById('resetPackingListBtn');
@@ -1723,48 +1914,50 @@
         }
 
         // --- Printing ---
+        // *** MODIFIED: updatePrintSection to use PROJECT_DATA ***
         function updatePrintSection() {
-            if (!printTruckId || !printProject || !printSkidsBody || !mainProjectSelect /* Check main select existence */) { console.error("Required print elements or project select missing."); return; }
-            const truckInfo = appState.truckLoad.truckInfo;
-            const truckSkids = appState.truckLoad.skids;
+             if (!printTruckId || !printProject || !printSkidsBody || !PROJECT_DATA ) { console.error("Required print elements or PROJECT_DATA missing."); return; }
+             const truckInfo = appState.truckLoad.truckInfo;
+             const truckSkids = appState.truckLoad.skids;
 
-            printTruckId.textContent = truckInfo.id || 'N/A';
-            printTruckDimensions.textContent = `${truckInfo.length || '?'}ft L × ${truckInfo.width || '?'}ft W`;
-            printTruckWeight.textContent = `${truckInfo.weight || '?'} lbs`;
+             printTruckId.textContent = truckInfo.id || 'N/A';
+             printTruckDimensions.textContent = `${truckInfo.length || '?'}ft L × ${truckInfo.width || '?'}ft W`;
+             printTruckWeight.textContent = `${truckInfo.weight || '?'} lbs`;
 
-            let projText = 'N/A';
-            const project = PROJECT_OPTIONS.find(p => p.value === truckInfo.project);
-            projText = project ? project.text : (truckInfo.project || 'N/A');
-            printProject.textContent = projText;
+             // *** Get project text from PROJECT_DATA ***
+             let projText = 'N/A';
+             const projectDetails = PROJECT_DATA.find(p => p.value === truckInfo.project);
+             projText = projectDetails ? projectDetails.text : (truckInfo.project || 'N/A'); // Display the full text
+             printProject.textContent = projText;
 
-            printTotalSkids.textContent = truckSkids.length;
-            printSkidsBody.innerHTML = ''; // Clear previous print rows
-            let printWeightTotal = 0;
+             printTotalSkids.textContent = truckSkids.length;
+             printSkidsBody.innerHTML = ''; // Clear previous print rows
+             let printWeightTotal = 0;
 
-            truckSkids.forEach((skid, index) => {
-                printWeightTotal += (skid.weight || 0);
-                const row = printSkidsBody.insertRow();
-                let printDescription = skid.description ? skid.description.replace(/\n/g, ', ') : '-';
-                // Add inventory source to print description if available
-                if (skid.originalInvId) {
-                    printDescription += ` (Inv: ${skid.originalInvId})`;
-                }
-                const displaySkidNumber = index + 1; // Use positional number for print
+             truckSkids.forEach((skid, index) => {
+                 printWeightTotal += (skid.weight || 0);
+                 const row = printSkidsBody.insertRow();
+                 let printDescription = skid.description ? skid.description.replace(/\n/g, ', ') : '-';
+                 // Add inventory source to print description if available
+                 if (skid.originalInvId) {
+                     printDescription += ` (Inv: ${skid.originalInvId})`;
+                 }
+                 const displaySkidNumber = index + 1; // Use positional number for print
 
-                row.innerHTML = `
-                    <td>${displaySkidNumber}</td> <!-- Print positional number -->
-                    <td>${skid.width?.toFixed(2) || '?'}</td>
-                    <td>${skid.length?.toFixed(2) || '?'}</td>
-                    <td>${skid.weight?.toFixed(2) || '?'}</td>
-                    <td>${printDescription}</td>`;
-            });
-            printTotalWeight.textContent = `${printWeightTotal.toFixed(2)} lbs`;
+                 row.innerHTML = `
+                     <td>${displaySkidNumber}</td> <!-- Print positional number -->
+                     <td>${skid.width?.toFixed(2) || '?'}</td>
+                     <td>${skid.length?.toFixed(2) || '?'}</td>
+                     <td>${skid.weight?.toFixed(2) || '?'}</td>
+                     <td>${printDescription}</td>`;
+             });
+             printTotalWeight.textContent = `${printWeightTotal.toFixed(2)} lbs`;
 
-            if (printLoadingSummaryDiv) {
-                let html = generateLoadingSummaryText().replace(/<h5>.*?<\/h5>/, '<h5>Loading Summary</h5>'); // Get summary, replace title
-                printLoadingSummaryDiv.innerHTML = html;
-            }
-        }
+             if (printLoadingSummaryDiv) {
+                 let html = generateLoadingSummaryText().replace(/<h5>.*?<\/h5>/, '<h5>Loading Summary</h5>'); // Get summary, replace title
+                 printLoadingSummaryDiv.innerHTML = html;
+             }
+         }
         function printSkidPage() { updatePrintSection(); window.print(); }
 
         // --- Utility ---
